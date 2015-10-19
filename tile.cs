@@ -1,140 +1,83 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class tile : MonoBehaviour {
-	private Renderer rend;
 
-	private Vector2 playerPosition;
-	public Vector2 tilePosition;
+	bool isPlayer;
+	bool isDamage;
+	bool isTurret;
+	bool isWall;
+	bool wallUp;
+	bool turretUp;
+	List<damageInfo> damageInfos = new List<damageInfo>();
+	int playerId;
 
-	private bool chosen;
-	private bool current;
-	private bool rightHold;
-
-	[SerializeField] Color mouseOverColor;
-	[SerializeField] Color chosenColor;
-	[SerializeField] Color attackColor;	
-	[SerializeField] Color invaildColor;
-	[SerializeField] Color jumpColor;
-
-	[SerializeField] bool shootable;
-	[SerializeField] bool mouseOn;
-
-	[SerializeField] inputManager iManager;
-	[SerializeField] statsManager dataBase;
-	[SerializeField] functionManager SS;
-	
-	int weapon;
-	playerAction player;
-
-	void Start() {
-		rend = GetComponent<Renderer>();
-
-		//establish connection with other scripts
+	public bool hasPlayer(){
+		return isPlayer;
 	}
 
-	void OnMouseEnter() {
-		if (!iManager.isCommandable)
-						return;
-		if (iManager.hold && shootable) {     // Target selection mode
-	 		iManager.attackCommand(tilePosition);// Everytime the mouse enters another tile the attack position is refreshed
-		}
-		mouseOn = true;
-	}
-	
-	void OnMouseExit() {  // Clears the state on previous tile
-		mouseon = false;
-		rightHold = false;		
+	public bool hasDamage(){
+		return isDamage;
 	}
 
-	void OnMouseOver(){
-		if (!iManager.commandable)
-			return;
-		if (Input.GetButton ("Fire2") && (current)) {   // Detect right MouseUp event manually
-			rightHold = true;
-		} else {
-			if(rightHold){
-				iManager.cancelCommand();   // Right click cancels one command at a time
-				rightHold = false;
-			}
-		}
+	public bool hasTurret(){
+		return isTurret;
 	}
 
-	void OnMouseDown() {
-		if (!iManager.commandable)
-			return;
-
-		if (current) {
-			iManager.startHold(tilePosition);					// Enters targeting mode
-		}
+	public bool hasWall(){
+		return isWall;
 	}
 
-  // The MouseUp event only works on left mouse button
-	void OnMouseUp(){     // Mouseup implies a Mousedown action, which means the player clicked on the tile
-		iManager.stopHold();
-		if (valid && mouseOn) {   // MouseUp always trigger on the tile where MouseDown happens!
-			iManager.moveCommand(tilePosition);   // Left mouse click choses a new movement step
-		}
+	public bool turretIsActivated(){
+		return turretUp;
 	}
 
-	void Update(){ 								//this part is what determines the display on each tile
-    if (!iManager.commandable)
-			return;
-		playerPosition = iManager.playerPosition;	
-		//in the case of weapons with recoil effect, fireposition!=playerposition
+	public bool wallIsActivated(){
+		return wallUp;
+	}
 
-    setState();
-    setAppearance();
-    
+	public int getPlayer(){
+		return playerId;
+	}
+
+	public List<damageInfo> getDamage(){
+		return damageInfos;
+	}
+
+	public void setPlayer(int playerIndex){
+		playerId = playerIndex;
+		isPlayer = true;
+	}
+
+	public void clearPlayer(){
+		isPlayer = false;
 	}
 	
-	void setState(){  // Sets the states of the current tile
-	  if (SS.near(playerPosition, tilePosition) && iManager.hasMoveLeft()) {
-			valid = true;
-		} else {
-			valid = false;
-		}
-		if (tilePosition == playerPosition){  
-			current = true;
-			chosen = true;
-		}else{
-			current=false;
-			if(iManager.inMovement(tilePosition)){ // Mark the trail with mouseover color
-				chosen = true;
-			}else{
-				chosen = false;
-			}
-		}
+	public void addDamage(damageInfo damage){
+		damageInfos.Add (damage);
+		isDamage = true;
+	}
+
+	// Once it's set to be a turret spwan point, it cannot be changed
+	public void setTurretSpawnPoint(){
+		isTurret = true;
+	}
+
+	// Once it's set to be a blast sheld, it cannot be changed
+	public void setBlastShield(){
+		isWall = true;
 	}
 	
-	void setAppearance(){
-	  if (iManager.inTarget(tilePosition)) {
-			setTarget();
-		}
-		if (current) {
-			setCurrent();
-		}else if(chosen||(mouseon&&valid)){
-			setMouseOver();
-		}else{
-			clear();
-		}
-		// In target selection mode
-		if (gctrl.hold) {
-		  wpnId = iManager.getWeapon();
-		  weapon wpn=player.getWeapon(wpnId);
-		  if (wpn.isInRange(SS.getDistance(tilePosition))){
-		    setInvalid();
-		  }
-		}
+	public void activateTurret(bool isTrue){
+		turretUp = isTrue;
 	}
-	void setTarget(){
+	
+	public void activateWall(bool isTrue){
+		wallUp = isTrue;
 	}
-	void setCurrent(){
-	}
-	void setMouseOver(){
-	}
-	void setInvaild(){
-	}
-	void clear(){
+	
+	public void clearDamage(){
+		damageInfos.Clear();
 	}
 }

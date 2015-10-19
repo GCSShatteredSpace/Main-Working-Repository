@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+
 public class functionManager : MonoBehaviour {
 	public Vector2[] direction; //holds all six movement directions
 	const float vertPart = 0.8666f; // sqrt(3)/2
-	public int tileSize;
-	[SerializeField] statsManager dataBase
+	float tileSize;
+	[SerializeField] statsManager dataBase;
 	
 	void Start () {
 		//Debug.Log (getDistance (new Vector2 (2f, -1f), new Vector2 (0f, 0f)));
@@ -66,12 +68,31 @@ public class functionManager : MonoBehaviour {
 		int x = 0;
 		int y = 0;
 		if(v.x != 0){
-			x = Mathf.Sign(v.x);
+			x = Mathf.RoundToInt(Mathf.Sign(v.x));	// Sign returns a float
 		}
 		if(v.y != 0){
-			y = Mathf.Sign(v.y);
+			y = Mathf.RoundToInt(Mathf.Sign(v.y));
 		}
 		return new Vector2 (x, y);
+	}
+
+	// This function does not insert zero vector before the sequence
+	public List<Vector2> posToVelocity(List<Vector2> posSequence){
+		List<Vector2> velocitySequence = new List<Vector2>();
+		while (posSequence.Count!=1) {
+			velocitySequence.Add(posSequence[1]-posSequence[0]);
+			posSequence.RemoveAt(0);
+		}
+		return velocitySequence;
+	}
+
+	public float abs(Vector2 v){
+		// cart for cartesian coordinates
+		float cartx;
+		float carty;
+		cartx = v.y / 2 + v.x;
+		carty = v.y * vertPart;
+		return Mathf.Sqrt (Mathf.Pow(cartx,2) + Mathf.Pow(carty,2));
 	}
 	
 }
