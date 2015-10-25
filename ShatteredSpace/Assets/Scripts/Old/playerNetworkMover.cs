@@ -40,7 +40,7 @@ public class playerNetworkMover : Photon.MonoBehaviour {
 		energy = dataBase.startingEnergy;
 		if(photonView.isMine)
 		{
-			//GetComponent<Player>().enabled = true;
+			GetComponent<player>().enabled = true;
 			GetComponent<SphereCollider>().enabled = true;
 			energyDisplay = GameObject.Find("energy").GetComponent<Text>();
 			energyDisplay.text = "Energy:"+energy.ToString();
