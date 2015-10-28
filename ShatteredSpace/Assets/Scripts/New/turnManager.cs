@@ -20,7 +20,7 @@ public class turnManager : MonoBehaviour {
 	Vector2[] currentMovement = new Vector2[2];
 	Vector2[] currentExtraMovement = new Vector2[2];
 	bool[] readyForStep = new bool[2];
-	[SerializeField]List<player> players;
+	[SerializeField] List<player> players;
 
 	void Start(){
 		// This part is necessary for any spawned prefab
@@ -97,8 +97,8 @@ public class turnManager : MonoBehaviour {
 		readyPlayers = 0;
 		finishedPlayers = 0;
 		turnStarted = false;
-		iManager.startNewTurn (players [0].getPosition ());
-		players [0].resetTurn ();
+		iManager.startNewTurn (players[0].getPosition ());
+		players[0].resetTurn ();
 		time = -1;
 	}
 
@@ -157,8 +157,8 @@ public class turnManager : MonoBehaviour {
 		List<Vector2>[] velocitySequences= new List<Vector2>[2];
 		Vector2[] positions = new Vector2[2];
 		Vector2[] newPos = new Vector2[2];
-		for (int i=0; i<2; i++) {
-			positions [i] = players [i].getPosition ();
+		for (int i=0; i<2; i++) {	
+			positions[i] = players[i].getPosition ();
 			newPos[i] = positions[i] + currentMovement[i];
 		}
 		velocitySequences = calculateCollision(newPos,currentMovement);

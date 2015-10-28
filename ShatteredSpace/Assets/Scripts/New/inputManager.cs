@@ -21,7 +21,7 @@ public class inputManager : MonoBehaviour {
 	bool commandable;
 	int maxSteps;
 	
-	void Start () {
+	void Start () { 
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
 		tManager = GetComponent<turnManager> ();
@@ -43,6 +43,7 @@ public class inputManager : MonoBehaviour {
 			// Temporary code
 			tManager.getReady();
 			myPlayer.setActionSequence(commands);
+			myPlayer.setRemoteReady();
 			commandable=false;
 		}
 	}

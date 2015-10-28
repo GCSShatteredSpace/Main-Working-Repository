@@ -88,14 +88,14 @@ public class networkController : MonoBehaviour {
 		// The player should be spawned according to the number of players in the room
 		// Instead of the number of all players on the network
 		// This is the first thing I'm going to fix
-		Vector2 spawnPosition = SS.hexPositionTransform(spawnPoints[PhotonNetwork.playerList.Length]);
+		Vector2 spawnPosition = SS.hexPositionTransform(spawnPoints[PhotonNetwork.playerList.Length - 1]);
 		thisPlayer = PhotonNetwork.Instantiate ("SSplayer", spawnPosition,Quaternion.identity,0);
-		thisPlayer.GetComponent<player>().setPosition(spawnPoints[PhotonNetwork.playerList.Length]);
-		iManager.startNewTurn(spawnPoints[PhotonNetwork.playerList.Length]);
-		// Why does it appear here? I have no idea.
-		tManager.sendNetworkMessage += AddMessage;
+		thisPlayer.GetComponent<player>().setPosition(spawnPoints[PhotonNetwork.playerList.Length - 1]);
+		iManager.startNewTurn(spawnPoints[PhotonNetwork.playerList.Length - 1]);
 		// This is flawed!
-		tManager.addPlayer (thisPlayer.GetComponent<player> ());
+		player p = thisPlayer.GetComponent<player> ();
+		tManager.addPlayer (p);
+		p.addPlayerList (p.GetComponent<PhotonView> ());
 		//player.GetComponent<playerNetworkMover> ().RespawnMe += StartSpawnProcess;
 		//player.GetComponent<playerNetworkMover> ().SendNetworkMessage += AddMessage;
 	}
