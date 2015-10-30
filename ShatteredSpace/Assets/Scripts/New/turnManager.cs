@@ -126,8 +126,7 @@ public class turnManager : MonoBehaviour {
 		currentMovement [playerId] = movement;
 		currentExtraMovement [playerId] = extraMovement;
 		readyForStep [playerId] = true;
-		print ("Player num:");
-		print (PhotonNetwork.playerList.Length);
+		print ("Number of Players: " + PhotonNetwork.playerList.Length);
 		if (PhotonNetwork.playerList.Length == 1) {
 			demoCalculateStepSequence();
 		}
@@ -162,7 +161,8 @@ public class turnManager : MonoBehaviour {
 			newPos[i] = positions[i] + currentMovement[i];
 		}
 		velocitySequences = calculateCollision(newPos,currentMovement);
-		players [0].moveStep (velocitySequences[0]); players [1].moveStep (velocitySequences[1]);
+		StartCoroutine(players[0].moveStep (velocitySequences[0]));
+		StartCoroutine(players[1].moveStep (velocitySequences[1]));
 		endCurrentStep ();
 	}
 

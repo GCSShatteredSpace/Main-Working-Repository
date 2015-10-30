@@ -96,10 +96,16 @@ public class networkController : MonoBehaviour {
 		player p = thisPlayer.GetComponent<player> ();
 		tManager.addPlayer (p);
 		p.addPlayerList (p.GetComponent<PhotonView> ());
+		photonView.RPC ("resendState", PhotonTargets.Others);
 		//player.GetComponent<playerNetworkMover> ().RespawnMe += StartSpawnProcess;
 		//player.GetComponent<playerNetworkMover> ().SendNetworkMessage += AddMessage;
 	}
 
+	[PunRPC]
+	void resendState(){
+		player p = thisPlayer.GetComponent<player> ();
+		p.addPlayerList (p.GetComponent<PhotonView> ());
+	}
 	void AddMessage(string message){
 		photonView.RPC ("AddMessage_RPC", PhotonTargets.All, message);
 	}

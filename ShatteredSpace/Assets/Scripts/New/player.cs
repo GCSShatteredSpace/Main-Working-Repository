@@ -83,6 +83,7 @@ public class player : MonoBehaviour {
 			print("Turn:" + turn.ToString());
 		}
 	}
+
 	public void addPlayerList(PhotonView v){
 		v.RPC ("addPlayer", PhotonTargets.Others, v.viewID);
 	}
@@ -96,6 +97,7 @@ public class player : MonoBehaviour {
 
 	void startStep (){
 		print ("Prepare to move!");
+		print (finishedTurn);
 		if (actions.Count > 0 && !finishedTurn) {
 			action currentAction = actions.Pop();
 			print ("current attack: "+currentAction.attack.ToString());
@@ -121,7 +123,9 @@ public class player : MonoBehaviour {
 	}
 
 	public void resetTurn(){
+		print ("called reset");
 		finishedTurn = false;
+		photonView.RPC ("transferResetTurn", PhotonTargets.Others);
 	}
 
 	public void weaponHit(){
@@ -136,11 +140,12 @@ public class player : MonoBehaviour {
 	public IEnumerator moveStep(List<Vector2> vSequence){
 		print ("Move step!");
 		float time;
+		print ("Count " + vSequence.Count);
 		for (int i=0; i<vSequence.Count; i++) {
-			Debug.Log (vSequence[i]);
+			print ("why");
+			print (vSequence[i]);
 			if(vSequence[i]!=Vector2.zero){
 				time=SS.abs(vSequence[i])/speed;
-				print (vSequence[i]);
 				// Up till this point everything only exists in data
 				// move displays the data
 				StartCoroutine(move(playerPosition+vSequence[i],time));
@@ -180,6 +185,7 @@ public class player : MonoBehaviour {
 	}
 
 	public Vector2 getPosition(){
+		print ("player pos" + playerPosition);
 		return playerPosition;
 	}
 
@@ -201,6 +207,11 @@ public class player : MonoBehaviour {
 	}
 	public void setRemoteReady(){
 		photonView.RPC ("remoteGetReady", PhotonTargets.Others);
+	}
+
+	[PunRPC]
+	void transferResetTurn(){
+		finishedTurn = false;
 	}
 
 	[PunRPC]
