@@ -64,11 +64,11 @@ public class player : MonoBehaviour {
 		if (tManager.getTime()==time) return;
 		// Everything happens in between!
 		print ("Player Time = " + time.ToString ());
+
+		// If we don't syncronize time first, weapons will be fired one step early
+		time=tManager.getTime();
 		startStep ();
 
-
-		// What about making a list of delegates?
-		time=tManager.getTime();
 		if (time == -1) {
 			turn = tManager.getTurn ();
 			print ("Player end of turn!");
@@ -92,11 +92,14 @@ public class player : MonoBehaviour {
 				tManager.attemptToMove (velocity,currentAction.extraMovement,playerIndex);
 			}
 		} else {
-		// No action left to do!
+			// No action left to do!
 			actions.Clear();
 			print ("No action left! WaitCount: "+waitCount.ToString());
 			finishedTurn=true;
-			if (finishedTurn && waitCount==0){
+			// Even if it's not moving, it should tell turnManager because the other player might still be moving
+			// Notice that one player can be done with actions and still move because they are knocked away
+			tManager.attemptToMove (Vector2.zero,Vector2.zero,playerIndex);
+			if (waitCount==0){
 				tManager.finishAction(playerIndex);
 			}
 		}
@@ -106,6 +109,7 @@ public class player : MonoBehaviour {
 		finishedTurn = false;
 	}
 
+	// The weapon tells the player that it's done
 	public void weaponHit(){
 		waitCount -= 1;
 	}
