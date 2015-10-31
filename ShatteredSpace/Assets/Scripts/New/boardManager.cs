@@ -173,14 +173,17 @@ public class boardManager : MonoBehaviour {
         return false;        
     }
 
-	public void bomb(Vector2 position,damageInfo damage){
+	public bool bomb(Vector2 position,damageInfo damage){
+		bool hit = false;
 		List<int> pos = vecToBoard (position);
 		//print ("bomb!");
 		//print (new Vector2(pos[0],pos[1]));
 		if (board [pos [0], pos [1]].turretIsActivated ()) {
 			board [pos [0], pos [1]].getTurret().takeDamage(damage);
+			hit=true;
 		}
 		board [pos[0], pos[1]].addDamage (damage);
+		return hit;
 	}
 
 	/*
