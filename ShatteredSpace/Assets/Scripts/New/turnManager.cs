@@ -21,8 +21,8 @@ public class turnManager : MonoBehaviour {
 	Vector2[] currentMovement = new Vector2[2];
 	Vector2[] currentExtraMovement = new Vector2[2];
 	bool[] readyForStep = new bool[2];
-	[SerializeField]List<player> players;
-	
+	[SerializeField] List<player> players;
+
 	void Start(){
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
@@ -138,8 +138,7 @@ public class turnManager : MonoBehaviour {
 		currentMovement [playerId] = movement;
 		currentExtraMovement [playerId] = extraMovement;
 		readyForStep [playerId] = true;
-		print ("Player num:");
-		print (PhotonNetwork.playerList.Length);
+		print ("Number of Players: " + PhotonNetwork.playerList.Length);
 		if (PhotonNetwork.playerList.Length == 1) {
 			demoCalculateStepSequence();
 		}
@@ -169,12 +168,13 @@ public class turnManager : MonoBehaviour {
 		List<Vector2>[] velocitySequences= new List<Vector2>[2];
 		Vector2[] positions = new Vector2[2];
 		Vector2[] newPos = new Vector2[2];
-		for (int i=0; i<2; i++) {
-			positions [i] = players [i].getPosition ();
+		for (int i=0; i<2; i++) {	
+			positions[i] = players[i].getPosition ();
 			newPos[i] = positions[i] + currentMovement[i];
 		}
 		velocitySequences = calculateCollision(newPos,currentMovement);
-		players [0].moveStep (velocitySequences[0]); players [1].moveStep (velocitySequences[1]);
+		StartCoroutine(players[0].moveStep (velocitySequences[0]));
+		StartCoroutine(players[1].moveStep (velocitySequences[1]));
 		endCurrentStep ();
 	}
 	

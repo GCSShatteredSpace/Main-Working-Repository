@@ -11,26 +11,33 @@ public class player : MonoBehaviour {
 
 	public delegate void sendMessage(string MessageOverlay);
 	public event sendMessage SendNetworkMessage;
+	PhotonView photonView;
 	
 	GameObject myPlayer;
 	string playerName;
 	
-	Vector2 playerPosition;
+	[SerializeField] Vector2 playerPosition;
 	int energy;
 	int exp;
 	int time;
 	int turn;
 	Stack<action> actions = new Stack<action>();
+	Stack<action> copy = new Stack<action> ();
 	//LinkedList<action> actStack; 	// I don't know how it works, it keeps on giving me bugs!
 	
-	[SerializeField] int playerIndex;
+	[SerializeField] public int playerIndex;
+	[SerializeField] int playerGameID;
 	[SerializeField] float speed;
 	bool finishedTurn;
 	int waitCount;	// Keeps track of the num of weapons that are not done
 	// Temporary
 	weapon currWeapon;
 
-	void Start () {
+	void Awake () {
+		initPlayer ();
+	}
+
+	void initPlayer(){
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
 		GameObject gameController = GameObject.Find ("gameController");
@@ -38,10 +45,10 @@ public class player : MonoBehaviour {
 		tManager = gameController.GetComponent<turnManager> ();
 		SS = gameController.GetComponent<functionManager> ();
 		dataBase = GameObject.Find ("stats").GetComponent<statsManager> ();
-
-    	myPlayer = this.gameObject;
-    	time=-1;
-    	turn=0;
+		
+		myPlayer = this.gameObject;
+		time=-1;
+		turn=0;
 		// This is not a permanent solution
 		// But it sure ensure that all movements (espeacially ones involving collisions)
 		// are done in a stepTime
@@ -51,14 +58,17 @@ public class player : MonoBehaviour {
 		// Pretty disturbing if you think about it
 		currWeapon = this.gameObject.AddComponent<blaster> ();
 		currWeapon.master = this;
-		// This should be on playerNetworkMover or something
-		PhotonView pview = new PhotonView();
-		if (pview.isMine) {
-			iManager.setMyPlayer(this);
-			playerIndex=0;
+		photonView = PhotonView.Get (this);
+
+		//distinguishes which player is to be controlled
+		if (photonView.isMine) {
+			iManager.setMyPlayer (this);
+			playerIndex = 0;
+		} else {
+			playerIndex = 1;
 		}
 	}
-	
+
 	void Update(){
 		if (tManager.getTurn()==turn) return;
 		if (tManager.getTime()==time) return;
@@ -75,7 +85,20 @@ public class player : MonoBehaviour {
 			print("Turn:" + turn.ToString());
 		}
 	}
-	
+
+	public void addPlayerList(PhotonView v, Vector2 startPos){
+		v.RPC ("addPlayer", PhotonTargets.OthersBuffered, v.viewID, startPos);
+	}
+
+	//Existing players recieve data about the new player that has joined
+	[PunRPC]
+	void addPlayer(int id, Vector2 startPos){
+		player p = (PhotonView.Find(id).gameObject.GetComponent<player>());
+		p.setPosition (startPos);
+		initPlayer ();
+		tManager.addPlayer (p);
+	}
+
 	void startStep (){
 		print ("Prepare to move!");
 		if (actions.Count > 0 && !finishedTurn) {
@@ -86,7 +109,7 @@ public class player : MonoBehaviour {
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
 			}
-			if (actions.Count>0){
+			if (actions.Count > 0){
 				Vector2 velocity = actions.Peek().movement-currentAction.movement;
 				// Attention! Action contain position while we need velocity!
 				tManager.attemptToMove (velocity,currentAction.extraMovement,playerIndex);
@@ -95,6 +118,7 @@ public class player : MonoBehaviour {
 			// No action left to do!
 			actions.Clear();
 			print ("No action left! WaitCount: "+waitCount.ToString());
+
 			finishedTurn=true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
@@ -122,10 +146,12 @@ public class player : MonoBehaviour {
 	public IEnumerator moveStep(List<Vector2> vSequence){
 		print ("Move step!");
 		float time;
+		print ("Count " + vSequence.Count);
 		for (int i=0; i<vSequence.Count; i++) {
+			print ("why");
+			print (vSequence[i]);
 			if(vSequence[i]!=Vector2.zero){
 				time=SS.abs(vSequence[i])/speed;
-				print (vSequence[i]);
 				// Up till this point everything only exists in data
 				// move displays the data
 				StartCoroutine(move(playerPosition+vSequence[i],time));
@@ -165,20 +191,62 @@ public class player : MonoBehaviour {
 	}
 
 	public Vector2 getPosition(){
+		print ("player pos" + playerPosition);
 		return playerPosition;
 	}
 
 	public void setPosition(Vector2 pos){
 		playerPosition = pos;
 	}
-	
+
+	public int getID(){
+		return playerGameID;
+	}
+
+	public void setID(int i){
+		playerGameID = i;
+		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
+	}
+
+	[PunRPC]
+	void transferID(int i){
+		playerGameID = i;
+	}
+
+	//sets actions and transfers actions to dummy players on other clients
 	public void setActionSequence(Stack<action> commands){
 		foreach (action item in commands) {
 			actions.Push(item);
 		}
+		if (photonView.isMine) {
+			//reverse the stack
+			Stack<action> rev = new Stack<action>();
+			foreach(action item in commands){
+				rev.Push(item);
+			}
+			foreach (action item in rev) {
+				photonView.RPC ("transferAction", PhotonTargets.Others, item.movement, item.attack,
+			                item.weaponId, item.extraMovement);
+			}
+			photonView.RPC ("setSequence", PhotonTargets.Others);
+		}
+		resetTurn ();
 	}
 
-	public void setAction(){
-
+	[PunRPC]
+	void transferAction(Vector2 mov, Vector2 att, int wId, Vector2 extra){
+		action a = new action ();
+		a.movement = mov;
+		a.attack = att;
+		a.weaponId = wId;
+		a.extraMovement = extra;
+		copy.Push (a);
 	}
+
+	[PunRPC]
+	void setSequence(){
+		setActionSequence (copy);
+		copy.Clear ();
+		tManager.getReady ();
+	}	
 }
