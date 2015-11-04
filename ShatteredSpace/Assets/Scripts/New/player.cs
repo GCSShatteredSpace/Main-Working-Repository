@@ -16,7 +16,7 @@ public class player : MonoBehaviour {
 	GameObject myPlayer;
 	string playerName;
 	
-	[SerializeField] Vector2 playerPosition;
+	Vector2 playerPosition;
 	int energy;
 	int exp;
 	int time;
@@ -26,17 +26,16 @@ public class player : MonoBehaviour {
 	//LinkedList<action> actStack; 	// I don't know how it works, it keeps on giving me bugs!
 	
 	[SerializeField] public int playerIndex;
-	[SerializeField] int playerGameID;
 	[SerializeField] float speed;
 	bool finishedTurn;
 	int waitCount;	// Keeps track of the num of weapons that are not done
 	// Temporary
 	weapon currWeapon;
 
-	void Awake () {
+	void Start () {
 		initPlayer ();
 	}
-
+	//really weird solution im not sure
 	void initPlayer(){
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
@@ -58,9 +57,8 @@ public class player : MonoBehaviour {
 		// Pretty disturbing if you think about it
 		currWeapon = this.gameObject.AddComponent<blaster> ();
 		currWeapon.master = this;
+		// This should be on playerNetworkMover or something
 		photonView = PhotonView.Get (this);
-
-		//distinguishes which player is to be controlled
 		if (photonView.isMine) {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
@@ -86,21 +84,20 @@ public class player : MonoBehaviour {
 		}
 	}
 
-	public void addPlayerList(PhotonView v, Vector2 startPos){
-		v.RPC ("addPlayer", PhotonTargets.OthersBuffered, v.viewID, startPos);
+	public void addPlayerList(PhotonView v){
+		v.RPC ("addPlayer", PhotonTargets.Others, v.viewID);
 	}
 
-	//Existing players recieve data about the new player that has joined
 	[PunRPC]
-	void addPlayer(int id, Vector2 startPos){
+	void addPlayer(int id){
 		player p = (PhotonView.Find(id).gameObject.GetComponent<player>());
-		p.setPosition (startPos);
 		initPlayer ();
 		tManager.addPlayer (p);
 	}
 
 	void startStep (){
 		print ("Prepare to move!");
+		print (finishedTurn);
 		if (actions.Count > 0 && !finishedTurn) {
 			action currentAction = actions.Pop();
 			print ("current attack: "+currentAction.attack.ToString());
@@ -109,7 +106,7 @@ public class player : MonoBehaviour {
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
 			}
-			if (actions.Count > 0){
+			if (actions.Count>0){
 				Vector2 velocity = actions.Peek().movement-currentAction.movement;
 				// Attention! Action contain position while we need velocity!
 				tManager.attemptToMove (velocity,currentAction.extraMovement,playerIndex);
@@ -118,7 +115,7 @@ public class player : MonoBehaviour {
 		// No action left to do!
 			actions.Clear();
 			print ("No action left! WaitCount: "+waitCount.ToString());
-			finishedTurn = true;
+			finishedTurn=true;
 			if (finishedTurn && waitCount==0){
 				tManager.finishAction(playerIndex);
 			}
@@ -126,7 +123,9 @@ public class player : MonoBehaviour {
 	}
 
 	public void resetTurn(){
+		print ("called reset");
 		finishedTurn = false;
+		photonView.RPC ("transferResetTurn", PhotonTargets.Others);
 	}
 
 	public void weaponHit(){
@@ -193,39 +192,26 @@ public class player : MonoBehaviour {
 	public void setPosition(Vector2 pos){
 		playerPosition = pos;
 	}
-
-	public int getID(){
-		return playerGameID;
-	}
-
-	public void setID(int i){
-		playerGameID = i;
-		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
-	}
-
-	[PunRPC]
-	void transferID(int i){
-		playerGameID = i;
-	}
-
-	//sets actions and transfers actions to dummy players on other clients
+	
 	public void setActionSequence(Stack<action> commands){
 		foreach (action item in commands) {
 			actions.Push(item);
 		}
 		if (photonView.isMine) {
-			//reverse the stack
-			Stack<action> rev = new Stack<action>();
-			foreach(action item in commands){
-				rev.Push(item);
-			}
-			foreach (action item in rev) {
+			foreach (action item in commands) {
 				photonView.RPC ("transferAction", PhotonTargets.Others, item.movement, item.attack,
 			                item.weaponId, item.extraMovement);
 			}
 			photonView.RPC ("setSequence", PhotonTargets.Others);
 		}
-		resetTurn ();
+	}
+	public void setRemoteReady(){
+		photonView.RPC ("remoteGetReady", PhotonTargets.Others);
+	}
+
+	[PunRPC]
+	void transferResetTurn(){
+		finishedTurn = false;
 	}
 
 	[PunRPC]
@@ -242,6 +228,10 @@ public class player : MonoBehaviour {
 	void setSequence(){
 		setActionSequence (copy);
 		copy.Clear ();
+	}
+
+	[PunRPC]
+	void remoteGetReady(){
 		tManager.getReady ();
-	}	
+	}
 }

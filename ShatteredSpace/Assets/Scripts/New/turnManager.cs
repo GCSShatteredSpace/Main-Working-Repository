@@ -58,7 +58,7 @@ public class turnManager : MonoBehaviour {
 	}
 
 	public void getReady(){ 
-		readyPlayers += 1;
+		readyPlayers+=1;
 	}
 	
 	int getReadyPlayers(){	// Let's keep it an int for now
@@ -98,12 +98,13 @@ public class turnManager : MonoBehaviour {
 		finishedPlayers = 0;
 		turnStarted = false;
 		iManager.startNewTurn (players[0].getPosition ());
+		players[0].resetTurn ();
 		time = -1;
 	}
 
 	public void finishAction (int playerId){
 		finishedPlayers++;
-		if (finishedPlayers == PhotonNetwork.playerList.Length) endTurn();
+		if (finishedPlayers==PhotonNetwork.playerList.Length) endTurn();
 	}
 	
 	public int getTime(){

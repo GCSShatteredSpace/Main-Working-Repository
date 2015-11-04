@@ -43,6 +43,7 @@ public class inputManager : MonoBehaviour {
 			// Temporary code
 			tManager.getReady();
 			myPlayer.setActionSequence(commands);
+			myPlayer.setRemoteReady();
 			commandable=false;
 		}
 	}
