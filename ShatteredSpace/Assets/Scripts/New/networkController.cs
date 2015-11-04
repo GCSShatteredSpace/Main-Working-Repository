@@ -21,8 +21,10 @@ public class networkController : MonoBehaviour {
 	PhotonView photonView;
 	
 	GameObject thisPlayer;
+
 	Queue<string> messages = new Queue<string>();
 	const int messageCount = 6;
+	int numPlayers;
 
 	void Start () {
 		photonView = GetComponent<PhotonView> ();
@@ -84,28 +86,43 @@ public class networkController : MonoBehaviour {
 	}
 	
 	void spawnPlayer(){
-		// This is flawed in many ways
-		// The player should be spawned according to the number of players in the room
-		// Instead of the number of all players on the network
-		// This is the first thing I'm going to fix
 		Vector2 spawnPosition = SS.hexPositionTransform(spawnPoints[PhotonNetwork.playerList.Length - 1]);
 		thisPlayer = PhotonNetwork.Instantiate ("SSplayer", spawnPosition,Quaternion.identity,0);
 		thisPlayer.GetComponent<player>().setPosition(spawnPoints[PhotonNetwork.playerList.Length - 1]);
+
+		//Sets an absolute id for each player in terms of join order
+		if (PhotonNetwork.playerList.Length == 1) {
+			thisPlayer.GetComponent<player> ().setID (0);
+		} else {
+			thisPlayer.GetComponent<player> ().setID (-1);
+		}
+		photonView.RPC ("incrementPlayers", PhotonTargets.Others);
+
 		iManager.startNewTurn(spawnPoints[PhotonNetwork.playerList.Length - 1]);
-		// This is flawed!
+
 		player p = thisPlayer.GetComponent<player> ();
 		tManager.addPlayer (p);
-		p.addPlayerList (p.GetComponent<PhotonView> ());
-		photonView.RPC ("resendState", PhotonTargets.Others);
-		//player.GetComponent<playerNetworkMover> ().RespawnMe += StartSpawnProcess;
-		//player.GetComponent<playerNetworkMover> ().SendNetworkMessage += AddMessage;
+		p.addPlayerList (p.GetComponent<PhotonView> (),spawnPoints[PhotonNetwork.playerList.Length - 1]);
+
 	}
 
+	//Existing players increment numplayers
 	[PunRPC]
-	void resendState(){
-		player p = thisPlayer.GetComponent<player> ();
-		p.addPlayerList (p.GetComponent<PhotonView> ());
+	void incrementPlayers(){
+		numPlayers++;
+		photonView.RPC ("updatePlayers", PhotonTargets.Others, numPlayers);
 	}
+
+	//numplayers get updated for everyone
+	//the new player gets a newid 
+	[PunRPC]
+	void updatePlayers(int i){
+		numPlayers = i;
+		if (thisPlayer.GetComponent<player>().getID() == -1) {
+			thisPlayer.GetComponent<player> ().setID (numPlayers);
+		}
+	}
+
 	void AddMessage(string message){
 		photonView.RPC ("AddMessage_RPC", PhotonTargets.All, message);
 	}
