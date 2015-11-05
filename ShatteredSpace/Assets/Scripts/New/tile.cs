@@ -12,6 +12,7 @@ public class tile : MonoBehaviour {
 	bool turretUp;
 	List<damageInfo> damageInfos = new List<damageInfo>();
 	int playerId;
+	turret myTurret;
 
 	public bool hasPlayer(){
 		return isPlayer;
@@ -60,8 +61,12 @@ public class tile : MonoBehaviour {
 	}
 
 	// Once it's set to be a turret spwan point, it cannot be changed
-	public void setTurretSpawnPoint(){
-		isTurret = true;
+	public void setTurret(turret turret){
+		myTurret = turret;
+	}
+	
+	public turret getTurret(){
+		return myTurret;
 	}
 
 	// Once it's set to be a blast sheld, it cannot be changed
@@ -79,5 +84,6 @@ public class tile : MonoBehaviour {
 	
 	public void clearDamage(){
 		damageInfos.Clear();
+		this.isDamage = false;
 	}
 }

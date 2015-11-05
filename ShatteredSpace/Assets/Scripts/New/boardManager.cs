@@ -18,6 +18,8 @@ public class boardManager : MonoBehaviour {
     [SerializeField] Vector2[] barrierSpawnPoint = new Vector2[12]; // Barrier numbers may vary
 
 	[SerializeField] GameObject gameTile;
+	[SerializeField] GameObject turretGameObj;
+	[SerializeField] GameObject blastShieldGameObj;
 
 	tile[,] board;
 
@@ -25,7 +27,18 @@ public class boardManager : MonoBehaviour {
     void Start(){
         tileSize = dataBase.tileSize;
 		generateHexMap (dataBase.mapSize);
+		generateMapObjects ();
     }
+	
+	// Always use this function when dealing with in-game vectors!
+	List<int> vecToBoard(Vector2 v){
+		int x = Mathf.RoundToInt(v.x);
+		int y = Mathf.RoundToInt(v.y);
+		int newx, newy;
+		newx = x + dataBase.mapSize - 1;
+		newy = dataBase.mapSize - 1 - y;
+		return new List<int>(){newx,newy};
+	}
 
 	// This will be changed since we won't be satisfied with just a hexagon in the future
 	// But the formula for locating tiles is useful!
@@ -51,6 +64,40 @@ public class boardManager : MonoBehaviour {
 				instance.transform.SetParent (boardHolder);
 			}
 		}
+	}
+
+	void generateMapObjects(){
+		// Spawn turrets
+		foreach (Vector2 pos in turretSpawnPoint) {
+			Vector3 spawnPosition = SS.hexPositionTransform(pos);
+			List<int> temp = vecToBoard(pos);
+			int x = temp[0],y = temp[1];
+			board[x,y].activateTurret(true);
+			GameObject instance = Instantiate(turretGameObj,spawnPosition,Quaternion.LookRotation(Vector3.up)) as GameObject;
+			turret currTurret = instance.GetComponent<turret>();
+			board[x,y].setTurret(currTurret);
+			currTurret.setPos(pos);
+		}
+		// Spawn balst shields
+		foreach (Vector2 pos in barrierSpawnPoint) {
+			Vector3 spawnPosition = SS.hexPositionTransform(pos);
+			List<int> temp = vecToBoard(pos);
+			int x=temp[0],y=temp[1];
+			board[x,y].activateWall(true);
+			GameObject instance = Instantiate(blastShieldGameObj,spawnPosition,Quaternion.identity) as GameObject;
+		}
+	}
+
+	// This wipes all the damage on the board for the next step
+	public void cleanBoard(){
+		foreach (tile t in board) {
+			t.clearDamage();
+		}
+	}
+
+	public void destroyTurret(Vector2 pos){
+		List<int> temp = vecToBoard (pos);
+		board [temp [0], temp [1]].activateTurret (false);
 	}
 	
     public Vector3 ProjectPointLine(Vector3 point, Vector3 lineStart, Vector3 lineEnd){
@@ -100,17 +147,15 @@ public class boardManager : MonoBehaviour {
      * Returns whether the tile is occupied by barriers or turrets
      */
     public bool isOccupied(Vector2 pos){
-        for (int i=0;i<turretSpawnPoint.Length;i++){
-            if (pos.x == turretSpawnPoint[i].x && pos.y == turretSpawnPoint[i].y){
-                return true;        // Oh but what if the turret is destroyed? >:-)
-            }
-        }
-        for (int i=0;i<barrierSpawnPoint.Length;i++){
-            if (pos.x == barrierSpawnPoint[i].x && pos.y == barrierSpawnPoint[i].y){
-                return true;        // What if the shields are not deployed? >:-)
-            }
-        }
-        return false;
+		// This is modified using the tile class
+		int x, y;
+		List<int> temp = vecToBoard (pos);
+		x = temp [0];y = temp [1];
+		if (board [x,y].wallIsActivated()||board [x,y].turretIsActivated()) {
+			return true;
+		}else{
+			return false;
+		}
     }
 
     /*
@@ -128,19 +173,13 @@ public class boardManager : MonoBehaviour {
         return false;        
     }
 
-	List<int> vecToBoard(Vector2 v){
-		int x = Mathf.RoundToInt(v.x);
-		int y = Mathf.RoundToInt(v.y);
-		int newx, newy;
-		newx = x + dataBase.mapSize - 1;
-		newy = dataBase.mapSize - 1 - y;
-		return new List<int>(){newx,newy};
-	}
-
 	public void bomb(Vector2 position,damageInfo damage){
 		List<int> pos = vecToBoard (position);
 		//print ("bomb!");
 		//print (new Vector2(pos[0],pos[1]));
+		if (board [pos [0], pos [1]].turretIsActivated ()) {
+			board [pos [0], pos [1]].getTurret().takeDamage(damage);
+		}
 		board [pos[0], pos[1]].addDamage (damage);
 	}
 

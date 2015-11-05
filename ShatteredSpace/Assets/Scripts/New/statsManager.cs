@@ -8,6 +8,7 @@ public class statsManager : MonoBehaviour {
 	public float stepTime;
 	public int turretRange;
 	public int playerStartEnergy;
+	public int turretStartEnergy;
 
 	public int mapSize;
 
