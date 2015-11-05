@@ -9,8 +9,6 @@ public class player : MonoBehaviour {
 	[SerializeField]functionManager SS;
 	[SerializeField]statsManager dataBase;
 
-	public delegate void sendMessage(string MessageOverlay);
-	public event sendMessage SendNetworkMessage;
 	PhotonView photonView;
 	
 	GameObject myPlayer;
@@ -123,7 +121,7 @@ public class player : MonoBehaviour {
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
 			tManager.attemptToMove (Vector2.zero,Vector2.zero,playerIndex);
-			if (waitCount==0){
+			if (waitCount == 0){
 				tManager.finishAction(playerIndex);
 			}
 		}

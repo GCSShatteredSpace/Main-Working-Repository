@@ -86,10 +86,10 @@ public class networkController : MonoBehaviour {
 	}
 	
 	void spawnPlayer(){
-		Vector2 spawnPosition = SS.hexPositionTransform(spawnPoints[PhotonNetwork.playerList.Length - 1]);
+		Vector2 spawnHex = spawnPoints [PhotonNetwork.playerList.Length - 1];
+		Vector2 spawnPosition = SS.hexPositionTransform(spawnHex);
 		thisPlayer = PhotonNetwork.Instantiate ("SSplayer", spawnPosition,Quaternion.identity,0);
-		thisPlayer.GetComponent<player>().setPosition(spawnPoints[PhotonNetwork.playerList.Length - 1]);
-
+		thisPlayer.GetComponent<player>().setPosition(spawnHex);
 		//Sets an absolute id for each player in terms of join order
 		if (PhotonNetwork.playerList.Length == 1) {
 			thisPlayer.GetComponent<player> ().setID (0);
@@ -98,12 +98,11 @@ public class networkController : MonoBehaviour {
 		}
 		photonView.RPC ("incrementPlayers", PhotonTargets.Others);
 
-		iManager.startNewTurn(spawnPoints[PhotonNetwork.playerList.Length - 1]);
+		iManager.startNewTurn(spawnHex);
 
 		player p = thisPlayer.GetComponent<player> ();
 		tManager.addPlayer (p);
-		p.addPlayerList (p.GetComponent<PhotonView> (),spawnPoints[PhotonNetwork.playerList.Length - 1]);
-
+		p.addPlayerList (p.GetComponent<PhotonView> (),spawnHex);
 	}
 
 	//Existing players increment numplayers
@@ -123,20 +122,4 @@ public class networkController : MonoBehaviour {
 		}
 	}
 
-	void AddMessage(string message){
-		photonView.RPC ("AddMessage_RPC", PhotonTargets.All, message);
-	}
-
-	// This is where the message actually gets sent
-	// Notice that it's a RPC, so it's called on every client
-	[PunRPC]
-	void AddMessage_RPC(string message){
-		messages.Enqueue (message);
-		if(messages.Count > messageCount)
-			messages.Dequeue();
-		
-		messageWindow.text = "";
-		foreach(string m in messages)
-			messageWindow.text += m + "\n";
-	}
 }
