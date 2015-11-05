@@ -134,11 +134,10 @@ public class turnManager : MonoBehaviour {
 	// When both players have done so, turnManager calculates what will happen in the 
 	public void attemptToMove(Vector2 movement, Vector2 extraMovement, int playerId){	// Dummy:1 myPlayer:0
 		if (!turnStarted) return; // Just in case
-		print ("Attempt to move!");
 		currentMovement [playerId] = movement;
 		currentExtraMovement [playerId] = extraMovement;
 		readyForStep [playerId] = true;
-		print ("Number of Players: " + PhotonNetwork.playerList.Length);
+		//print ("Number of Players: " + PhotonNetwork.playerList.Length);
 		if (PhotonNetwork.playerList.Length == 1) {
 			demoCalculateStepSequence();
 		}
@@ -149,7 +148,7 @@ public class turnManager : MonoBehaviour {
 	
 	//For tesing purposes only! Doesn't involve other players!
 	void demoCalculateStepSequence(){
-		print ("Demo calculate step sequence!");
+		//print ("Demo calculate step sequence!");
 		Vector2 nextPos = currentMovement [0] + players [0].getPosition();
 		List<Vector2> result = new List<Vector2> ();
 		if (bManager.isOccupied (nextPos)) {
@@ -192,13 +191,19 @@ public class turnManager : MonoBehaviour {
 			}
 		}
 		// Look for player collision
-		if (endPos [0] != endPos [1] &&
-		    // See if it's the tricky special case where players swap positions
-		    !(endPos [0] == endPos [1] - v [1] && endPos [1] == endPos [0] - v [0])) {
+		if (endPos [0] != endPos [1]){
 			result [0] = new List<Vector2>();
 			result [1] = new List<Vector2>();
 			result [0].Add (v [0]);
 			result [1].Add (v [1]);
+			return result;
+		} else if(endPos [0] == endPos [1] - v [1] && endPos [1] == endPos [0] - v [0]) {
+			// The tricky special case where players swap positions
+			result [0] = new List<Vector2>();
+			result [1] = new List<Vector2>();
+			// The 1/4 is just a magical number for the thing to look a little more realistic
+			result [0].Add (v [0]/4);result [0].Add (-v [0]/4);
+			result [1].Add (v [1]/4);result [1].Add (v [1]/4);
 			return result;
 		} else {
 			print ("Player collision!");

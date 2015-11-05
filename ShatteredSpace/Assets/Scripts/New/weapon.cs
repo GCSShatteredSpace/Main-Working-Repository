@@ -8,17 +8,17 @@ public class weapon : MonoBehaviour
 	public functionManager SS;
 	
 	// There is a protection level thing that I don't know how to sort out
-	public int damage;
-	public int range;
-	public int delay;	// The number of steps damage is generated after the weapon fired
-	public player master; // The player that the weapon belong to...
-	public string weaponName; 
-	public string description; 
-	public int fireTime; 
-	public bool canFire;
+	int damage;
+	int range;
+	int delay;	// The number of steps damage is generated after the weapon fired
+	player master; // The player that the weapon belong to...
+	string weaponName; 
+	string description; 
+	int fireTime; 
+	bool canFire;
 	
-	public bool fired;
-	public Vector2 targetPosition;
+	bool fired;
+	Vector2 targetPosition;
 	/*Note: intentionally did not include too many required fields in the abstract class. Can add more later if necessary */ 
 	
 	public weapon(string name, string description,int damage, int range, int delay) /* initiates a basic weapon object. Can override in a 
@@ -48,7 +48,7 @@ public class weapon : MonoBehaviour
 		}
 	}
 	
-	public void fireWeapon(Vector2 pos,int time){
+	public virtual void fireWeapon(Vector2 pos,int time){
 		print ("Weapon fired!");
 		fired = true;
 		// Cause damage is generated at the end of current step
@@ -99,5 +99,22 @@ public class weapon : MonoBehaviour
 	public string getInfo()
 	{
 		return this.description; 
+	}
+
+	public void setFired(bool value)
+	{
+		fired = value;
+	}
+
+	public player getMaster(){
+		return master;
+	}
+
+	public void setMaster(player p){
+		master = p;
+	}
+
+	public bool hasFired(){
+		return fired;
 	}
 }

@@ -177,7 +177,7 @@ public class boardManager : MonoBehaviour {
 		bool hit = false;
 		List<int> pos = vecToBoard (position);
 		//print ("bomb!");
-		//print (new Vector2(pos[0],pos[1]));
+		print ("Bomb:"+(new Vector2(pos[0],pos[1])).ToString());
 		if (board [pos [0], pos [1]].turretIsActivated ()) {
 			board [pos [0], pos [1]].getTurret().takeDamage(damage);
 			hit=true;
