@@ -173,6 +173,19 @@ public class boardManager : MonoBehaviour {
         return false;        
     }
 
+	public List<turret> getAttackingTurrets(Vector2 pos){
+		List<turret> attackers = new List<turret>();
+		int range = dataBase.turretRange;
+		float turretX;
+		float turretY;
+		for (int i=0;i<turretSpawnPoint.Length;i++){
+			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){   
+				attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+			}
+		}
+		return attackers;        
+	}
+
 	public bool bomb(Vector2 position,damageInfo damage){
 		bool hit = false;
 		List<int> pos = vecToBoard (position);
@@ -205,5 +218,18 @@ public class boardManager : MonoBehaviour {
 	public tile getTile(Vector2 position){
 		List<int> pos = vecToBoard (position);
 		return board [pos[0], pos[1]];
+	}
+	public List<damageInfo> getTileDamage(Vector2 v){
+		return getTile(v).getDamage ();
+	}
+	public List<damageInfo> getTurretDamage(Vector2 v){
+		List<damageInfo> d = new List<damageInfo>();
+		if (isDangerous (v)) {
+			List<turret> turretList = this.getAttackingTurrets (v);
+			foreach (turret t in turretList) {
+				d.Add (t.getDamage ());
+			}
+		}
+		return d;
 	}
 }

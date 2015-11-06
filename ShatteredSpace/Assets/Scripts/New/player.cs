@@ -138,8 +138,9 @@ public class player : MonoBehaviour {
 		waitCount -= 1;
 	}
 
-	void receiveDamage(){
-		
+	public void receiveDamage(int a){
+		print ("damage" + a);
+		energy -= a;
 	}
   	
 	// Called by turn manager
@@ -151,6 +152,7 @@ public class player : MonoBehaviour {
 				// Up till this point everything only exists in data
 				// move displays the data
 				StartCoroutine(move(playerPosition+vSequence[i],time));
+				tManager.playerTakeDamage(this);
 				yield return new WaitForSeconds(time);
 			}
 

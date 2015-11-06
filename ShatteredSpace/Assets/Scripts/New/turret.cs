@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class turret : MonoBehaviour {
-	
+
+	public static int TURRET_DAMAGE = 5;
+
 	statsManager dataBase;
 	boardManager bManager;
 
@@ -18,6 +20,11 @@ public class turret : MonoBehaviour {
 		energy = dataBase.turretStartEnergy;
 	}
 
+	public damageInfo getDamage(){
+		damageInfo d = new damageInfo ();
+		d.damageAmount = TURRET_DAMAGE;
+		return d;
+	}
 	public void takeDamage(damageInfo damage){
 		energy -= damage.damageAmount;
 		if (energy <= 0)

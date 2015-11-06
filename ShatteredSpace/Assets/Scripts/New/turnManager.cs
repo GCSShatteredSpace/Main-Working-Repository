@@ -276,7 +276,17 @@ public class turnManager : MonoBehaviour {
 	}
 
 	
-
+    public void playerTakeDamage(player p){
+		Vector2 pos = p.getPosition ();
+		List<damageInfo> damages = bManager.getTileDamage (pos);
+		List<damageInfo> tDamages = bManager.getTurretDamage (pos);
+		foreach(damageInfo d in damages){
+			p.receiveDamage(d.damageAmount);
+		}
+		foreach (damageInfo d in tDamages) {
+			p.receiveDamage (d.damageAmount);
+		}
+	}
 	void endCurrentStep (){
 		for (int i=0; i<2; i++) {
 			readyForStep [i] = false;
