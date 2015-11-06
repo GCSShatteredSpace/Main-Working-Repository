@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 30308ce568c8c45cf9a0c9fe02cc092c
+timeCreated: 1446760299
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - tManager: {instanceID: 0}
+  - bManager: {instanceID: 0}
+  - SS: {instanceID: 0}
+  - master: {instanceID: 0}
+  - mineModel: {fileID: 117816, guid: 41571020c4d784c6b97f364c2c365f59, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
