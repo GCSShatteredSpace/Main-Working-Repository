@@ -56,15 +56,16 @@ public class weapon : MonoBehaviour
 		targetPosition = pos;
 	}
 	
-	public void generateDamage(){
+	public bool generateDamage(){
 		print ("generate damage!");
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = damage;
 		newDamage.attacker = master;
-		bManager.bomb (targetPosition,newDamage);
+		bool hit = bManager.bomb (targetPosition,newDamage);
 		// Since the damage is generated, the weapon can take a rest
 		fired = false;
 		master.weaponHit ();
+        return hit;
 	}
 	
 	public int getFireTime()
