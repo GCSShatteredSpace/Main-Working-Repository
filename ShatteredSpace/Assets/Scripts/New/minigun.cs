@@ -42,7 +42,7 @@ public class minigun : weapon
                 FireInstance shot = shots[i];
                 if (tManager.getTime() == shot.fireTime && !shot.generatedDamage)
                 {
-                    print("FireTime = " + fireTime.ToString());
+                    print("FireTime = " + shot.fireTime.ToString());
                     generateDamage();
                     shot.generatedDamage = false;
                     numDmgGenerated = 0;
@@ -54,7 +54,7 @@ public class minigun : weapon
     new public void fireWeapon(Vector2 pos, int time)
     {
         print("Weapon fired!");
-        fireTime = time + delay;
+        int fireTime = time + DELAY;
 
         FireInstance shot = new FireInstance(fireTime, pos);
         shots.Add(shot);
