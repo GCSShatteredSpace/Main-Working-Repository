@@ -11,7 +11,7 @@ public class grenade : weapon {
 	public int maxBombs;
 	public int splatter;
 	
-	public grenade():base("grenade","grenade",4,4,-1
+	public grenade():base("grenade","grenade",4,4,-1,1
 	                      // -1 stands for delay until end of turn but actually we'll never use it
 	                      // We can't even say if time==-1 because that's when turn actually end
 	                      // We are looking for a time when players stop moving but turn hasn't really ended
@@ -19,25 +19,25 @@ public class grenade : weapon {
 		maxBombs = 1;
 	}
 
-	// Overwrite!
-	void update(){
+	void Update(){
 		if (tManager.endOfPlayerMovement() && this.hasFired()) {	// If it's time for bombs to fall
 			print ("Grenades fall!");
 			foreach(Vector2 pos in bombPos){
 				generateDamage(pos);
 			}
+			bombPos.Clear();
+			this.setFired(false);
 		}
 	}
 
-	// Overwrite!
-	public void fireWeapon(Vector2 pos,int time){
+	public override void fireWeapon(Vector2 pos,int time){
 		print ("Grenade in the air!");
 		this.setFired(true);
 		bombPos.Add(pos);
 	}
 
 	// Overwrite!
-	public void generateDamage(Vector2 pos){
+	void generateDamage(Vector2 pos){
 		print ("generate grenade damage!");
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = this.getDamage();
@@ -55,5 +55,7 @@ public class grenade : weapon {
 		this.setFired(false);
 		this.getMaster().weaponHit ();
 	}
+
+
 	
 }
