@@ -14,6 +14,7 @@ public class inputManager : MonoBehaviour {
 	int moveIndex;
 	Vector2 playerPosition;	// Where players end up after each step
 	Vector2 firePosition;	// Sometimes players fire at a position and move because of recoil
+	Vector2 noAttack = new Vector2 (.5f, .5f);
 
 	bool isTargeting;				// Click and drag to pick targets
 	Vector3 targetStart;
@@ -60,12 +61,12 @@ public class inputManager : MonoBehaviour {
 
 		action newAction = new action();
 		newAction.movement = playerPosition;
-		newAction.attack = new Vector2 (.5f, .5f);
+		newAction.attack = noAttack;
 		newAction.weaponId = 0;
 
 		commands.Push (newAction);
 
-		targetEnd = new Vector3 (.5f, .5f, 0);
+		targetEnd = noAttack;
 		targetStart = playerPosition;
 		targetLine.enabled = false;
 		commandable = true;
@@ -75,7 +76,7 @@ public class inputManager : MonoBehaviour {
 		//Debug.Log("Command added!");
 		moveIndex++;
 		action newAction = new action ();
-		newAction.attack = new Vector2(.5f,.5f);//(0.5,0.5) basically stands for "nothing"
+		newAction.attack = noAttack;
 		newAction.movement = pos;
 		playerPosition = pos;
 
@@ -87,6 +88,8 @@ public class inputManager : MonoBehaviour {
 	public void attackCommand(Vector2 pos){		// Choose the attack target for this step
 		//Debug.Log("Attack!");
 		action lastAction = commands.Pop();
+		if (lastAction.attack == noAttack)
+			myPlayer.getWeapon ().planToFire ();
 		lastAction.attack = pos;
 		lastAction.weaponId = currentWeapon;
 
@@ -135,6 +138,7 @@ public class inputManager : MonoBehaviour {
 		commands.Push(lastAction);
 
 		targetLine.enabled = false;
+		myPlayer.getWeapon ().cancelFire ();
 
 	}
 
@@ -194,7 +198,7 @@ public class inputManager : MonoBehaviour {
 	}
 
 	public bool hasAttackLeft(){
-		return true;	// Tempoary solution
+		return myPlayer.getWeapon().readyToFire();
 	}
 
 	public Vector2 getPlayerPosition(){
