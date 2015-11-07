@@ -57,7 +57,7 @@ public class player : MonoBehaviour {
 		// Temp
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<grenade> ();
+		currWeapon = this.gameObject.AddComponent<sniperCannon> ();
 		currWeapon.setMaster(this);
 		photonView = PhotonView.Get (this);
 
@@ -197,7 +197,7 @@ public class player : MonoBehaviour {
 		//Debug.Log(Time.time-currTime-time);
 	}
 
-	public weapon getWeapon(int weaponId){
+	public weapon getWeapon(){
 		// This is just temporary
 		return currWeapon;
 	}

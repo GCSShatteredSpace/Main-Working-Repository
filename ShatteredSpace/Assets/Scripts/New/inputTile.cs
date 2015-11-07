@@ -1,25 +1,33 @@
 using UnityEngine;
+//using UnityEngine.GUI;
 using System.Collections;
 
 public class inputTile : MonoBehaviour {
 	Renderer rend;
+	[SerializeField] Texture2D warning;
+
+	float warningSize = 35f;
+	const int warningRatio = 60;
+	const float vertOffset = 3f;
 
 	Vector2 playerPosition;
-	public Vector2 tilePosition;
+	public Vector2 tilePosition = new Vector2();
 
 	bool chosen;	// The tile is in movement path
 	bool current;
 	bool inTarget;
 	bool rightHold;
 	bool isValidTarget;
+	bool hasDamage;
 	bool dangerous;
-	[SerializeField]bool valid;
+	[SerializeField] bool valid;
 
 	[SerializeField] Color mouseOverColor;
 	[SerializeField] Color chosenColor;
-	[SerializeField] Color attackColor;	
+	[SerializeField] Color attackColor;
 	[SerializeField] Color invalidColor;
 	[SerializeField] Color dangerColor;
+	[SerializeField] Color damageColor;
 	[SerializeField] Color jumpColor;
 	
 	[SerializeField] bool mouseOn;
@@ -47,8 +55,7 @@ public class inputTile : MonoBehaviour {
 	void OnMouseEnter() {
 		if (!iManager.isCommandable())
 						return;
-		if (iManager.isInTargetMode() && iManager.hasAttackLeft() 
-			&& isValidTarget) {     // Target selection mode
+		if (iManager.isInTargetMode() && isValidTarget) {     // Target selection mode
 	 		iManager.attackCommand(tilePosition);// Everytime the mouse enters another tile the attack position is refreshed
 		}
 		if (!iManager.isInTargetMode()){
@@ -77,7 +84,7 @@ public class inputTile : MonoBehaviour {
 	void OnMouseDown() {
 		if (!iManager.isCommandable())
 			return;
-		if (current) {
+		if (current && iManager.hasAttackLeft()) {
 			//int wpnId = iManager.getWeaponId();
 			//weapon wpn = myPlayer.getWeapon(wpnId);
 			//if(wpn.readyToFire()){
@@ -129,6 +136,13 @@ public class inputTile : MonoBehaviour {
 		}
 
 		if (bManager.getTile (tilePosition).hasDamage()) {
+			hasDamage = true;
+		} else {
+			hasDamage = false;
+		}
+
+		// If the player chose to stay here, s/he is in trouble
+		if (current && bManager.isDangerous (tilePosition)) {
 			dangerous = true;
 		} else {
 			dangerous = false;
@@ -137,7 +151,7 @@ public class inputTile : MonoBehaviour {
 		if (iManager.isInTargetMode()) {
 		  int wpnId = iManager.getWeaponId();
 		  myPlayer = iManager.getMyPlayer();
-		  weapon wpn = myPlayer.getWeapon(wpnId);
+		  weapon wpn = myPlayer.getWeapon();
 		  if (!wpn.isInRange(SS.getDistance(tilePosition,playerPosition))
 		  	|| bManager.isBlocked(playerPosition,tilePosition)){
 		    isValidTarget = false;
@@ -153,13 +167,17 @@ public class inputTile : MonoBehaviour {
 	  	if (inTarget && iManager.isCommandable ()) {
 			setTarget ();
 		}
-		if (dangerous) {
-			setDangerous();
+		if (hasDamage) {
+			setDamage();
 		}
 		if (current) {
 			setCurrent();
 		}else if(chosen||(mouseOn&&valid)){
 			setMouseOver();
+		}
+
+		if (dangerous) {
+			//setDangerous();
 		}
 		// In target selection mode
 		if (iManager.isInTargetMode() && !isValidTarget) {
@@ -186,8 +204,22 @@ public class inputTile : MonoBehaviour {
 		rend.material.color = invalidColor;
 	}
 
-	void setDangerous(){
-		rend.material.color = dangerColor;
+	void setDamage(){
+		rend.material.color = damageColor;
+	}
+
+	void OnGUI(){
+		if (!iManager.isCommandable()) {
+			return;
+		}
+		if (dangerous) {
+			Vector3 center = SS.hexPositionTransform (tilePosition);
+			Rect bounds = new Rect (Screen.width/2 + center.x*warningRatio - warningSize / 2, 
+			                        Screen.height/2 - center.y*warningRatio - warningSize / 2 - vertOffset,
+			                        warningSize, warningSize);
+
+			GUI.DrawTexture (bounds, warning);
+		}
 	}
 
 	void clear(){

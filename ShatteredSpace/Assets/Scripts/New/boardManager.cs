@@ -158,7 +158,7 @@ public class boardManager : MonoBehaviour {
         if (x1>x2){temp = x1; x1 = x2; x2 = temp;}
         if (y1>y2){temp = y1; y1 = y2; y2 = temp;}
         return (x1 < x + epsilon) && 
-                (x2 > x - epsilon) &&
+                (x2 > x - epsilon) && 
                 (y1 < y + epsilon) && 
                 (y2 > y - epsilon);
     }
@@ -184,8 +184,12 @@ public class boardManager : MonoBehaviour {
         int range = dataBase.turretRange;
         float turretX;
         float turretY;
-        for (int i=0;i<turretSpawnPoint.Length;i++){
-            if (SS.getDistance(turretSpawnPoint[i],pos)<=range){    // Use the functions in SS!
+		List<int> turretPos;
+
+        for (int i = 0;i < turretSpawnPoint.Length;i++){
+			turretPos = vecToBoard(turretSpawnPoint[i]);
+			if (SS.getDistance(turretSpawnPoint[i],pos) <= range 
+			    && board [turretPos [0], turretPos [1]].turretIsActivated ()){    // Use the functions in SS!
                 return true;
             }
         }
@@ -196,7 +200,7 @@ public class boardManager : MonoBehaviour {
 		bool hit = false;
 		List<int> pos = vecToBoard (position);
 		//print ("bomb!");
-		print ("Bomb:"+(new Vector2(pos[0],pos[1])).ToString());
+		print ("Bomb:" + (new Vector2(pos[0],pos[1])).ToString());
 
         // If damage is applied to a turret
 		if (board [pos [0], pos [1]].turretIsActivated ()) {

@@ -90,7 +90,7 @@ public class weapon : MonoBehaviour
 	}
 	
 	public virtual bool readyToFire(){
-		return numOfShots >= shotsPlanned;
+		return numOfShots > shotsPlanned;
 	}
 
 	public void planToFire(){
