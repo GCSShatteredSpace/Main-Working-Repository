@@ -77,7 +77,7 @@ public class weapon : MonoBehaviour
 		return this.damage; 
 	}
 	
-	public bool isInRange(int distance)
+	public virtual bool isInRange(int distance)
 	{
 		return distance<=range && distance!=0; 
 	}

@@ -7,10 +7,11 @@ public class inputTile : MonoBehaviour {
 	Vector2 playerPosition;
 	public Vector2 tilePosition;
 
-	bool chosen;
+	bool chosen;	// The tile is in movement path
 	bool current;
 	bool inTarget;
 	bool rightHold;
+	bool isValidTarget;
 	bool dangerous;
 	[SerializeField]bool valid;
 
@@ -46,10 +47,13 @@ public class inputTile : MonoBehaviour {
 	void OnMouseEnter() {
 		if (!iManager.isCommandable())
 						return;
-		if (iManager.isInTargetMode() && iManager.hasAttackLeft()) {     // Target selection mode
+		if (iManager.isInTargetMode() && iManager.hasAttackLeft() 
+			&& isValidTarget) {     // Target selection mode
 	 		iManager.attackCommand(tilePosition);// Everytime the mouse enters another tile the attack position is refreshed
 		}
-		mouseOn = true;
+		if (!iManager.isInTargetMode()){
+			mouseOn = true;
+		}else{mouseOn = false;}
 	}
 	
 	void OnMouseExit() {  // Clears the state on previous tile
@@ -130,6 +134,18 @@ public class inputTile : MonoBehaviour {
 			dangerous = false;
 		}
 
+		if (iManager.isInTargetMode()) {
+		  int wpnId = iManager.getWeaponId();
+		  myPlayer = iManager.getMyPlayer();
+		  weapon wpn = myPlayer.getWeapon(wpnId);
+		  if (!wpn.isInRange(SS.getDistance(tilePosition,playerPosition))
+		  	|| bManager.isBlocked(playerPosition,tilePosition)){
+		    isValidTarget = false;
+		  }else{
+		  	isValidTarget = true;
+		  }
+		}
+
 	}
 	
 	void setAppearance(){
@@ -146,12 +162,8 @@ public class inputTile : MonoBehaviour {
 			setMouseOver();
 		}
 		// In target selection mode
-		if (iManager.isInTargetMode()) {
-		  int wpnId = iManager.getWeaponId();
-		  //weapon wpn = myPlayer.getWeapon(wpnId);
-		  //if (wpn.isInRange(SS.getDistance(tilePosition,playerPosition))){
-		  //  setInvalid();
-		  //}
+		if (iManager.isInTargetMode() && !isValidTarget) {
+		    setInvalid();
 		}
 	}
 

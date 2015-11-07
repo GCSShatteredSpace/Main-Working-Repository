@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class turnManager : MonoBehaviour {
 	
+	const int maxPlayers=2;	// We will stick to 2 players for a long time
+
 	[SerializeField]statsManager dataBase;
 	[SerializeField]boardManager bManager;
 	[SerializeField]inputManager iManager;
@@ -128,6 +130,9 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
+		if (players.Count==maxPlayers){
+			bManager.setPlayers(players);
+		}
 	}
 	
 	// The player tells turnManager the next move

@@ -55,7 +55,7 @@ public class player : MonoBehaviour {
 		// Temp
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<mine> ();
+		currWeapon = this.gameObject.AddComponent<sniperCannon> ();
 		currWeapon.setMaster(this);
 		photonView = PhotonView.Get (this);
 
@@ -138,8 +138,13 @@ public class player : MonoBehaviour {
 		waitCount -= 1;
 	}
 
-	void receiveDamage(){
-		
+	public void takeDamage(int amount){
+		energy-=amount;
+		if (energy<=0) die();
+	}
+
+	void die(){
+		print("Player" + playerName + "is destroyed!");
 	}
   	
 	// Called by turn manager
@@ -183,7 +188,8 @@ public class player : MonoBehaviour {
 	}
 
 	public weapon getWeapon(int weaponId){
-		return null;
+		// This is just temporary
+		return currWeapon;
 	}
 
 	public Vector2 getPosition(){

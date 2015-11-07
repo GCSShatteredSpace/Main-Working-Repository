@@ -8,6 +8,8 @@ public class inputManager : MonoBehaviour {
 	turnManager tManager;
 	player myPlayer;
 
+	bool myPlayerIsSet;
+
 	public Stack<action> commands = new Stack<action>();
 	int moveIndex;
 	Vector2 playerPosition;	// Where players end up after each step
@@ -28,6 +30,7 @@ public class inputManager : MonoBehaviour {
 		SS = GetComponent<functionManager> ();
 
 		targetLine = GetComponent <LineRenderer> ();
+		myPlayerIsSet = false;
 		// Only temporary
 		commandable = false;
 		maxSteps = 10;
@@ -36,6 +39,7 @@ public class inputManager : MonoBehaviour {
 
 	public void setMyPlayer(player p){
 		myPlayer = p;
+		myPlayerIsSet = true;
 	}
 
 	void Update () {
@@ -100,7 +104,7 @@ public class inputManager : MonoBehaviour {
 			//print("Command removed!");
 			moveIndex--;
 			commands.Pop();
-			print(commands.Count);
+			//print(commands.Count);
 			action lastAction = commands.Peek();
 			playerPosition = lastAction.movement;
 			firePosition = playerPosition-lastAction.extraMovement;
@@ -176,6 +180,11 @@ public class inputManager : MonoBehaviour {
 		return commandable;
 	}
 
+	public player getMyPlayer(){
+		return myPlayer;
+	}
+
+	// This is redundent
 	public int getWeaponId(){
 		return currentWeapon;
 	}
