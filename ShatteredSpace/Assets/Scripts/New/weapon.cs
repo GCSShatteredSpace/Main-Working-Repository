@@ -15,13 +15,16 @@ public class weapon : MonoBehaviour
 	string weaponName; 
 	string description; 
 	int fireTime; 
-	bool canFire;
+
+	int shotsPlanned;
+	int numOfShots;	// Maximum time you can fire this weapon
 	
 	bool fired;
 	Vector2 targetPosition;
 	/*Note: intentionally did not include too many required fields in the abstract class. Can add more later if necessary */ 
 	
-	public weapon(string name, string description,int damage, int range, int delay) /* initiates a basic weapon object. Can override in a 
+	public weapon(string name, string description,
+		int damage, int range, int delay, int shots) /* initiates a basic weapon object. Can override in a 
                                                                                     subclass to construct a weapon with more fields */                                        
 	{
 		this.weaponName = name;
@@ -29,6 +32,7 @@ public class weapon : MonoBehaviour
 		this.damage = damage;
 		this.range = range;
 		this.delay = delay;
+		this.numOfShots = shots;
 	}
 	
 	void Awake(){
@@ -54,9 +58,12 @@ public class weapon : MonoBehaviour
 		// Cause damage is generated at the end of current step
 		fireTime = time+delay;
 		targetPosition = pos;
+
+		// The turn has started, so reset this for the next turn
+		shotsPlanned = 0;
 	}
 	
-	public void generateDamage(){
+	void generateDamage(){
 		print ("generate damage!");
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = damage;
@@ -83,7 +90,15 @@ public class weapon : MonoBehaviour
 	}
 	
 	public virtual bool readyToFire(){
-		return canFire;
+		return numOfShots >= shotsPlanned;
+	}
+
+	public void planToFire(){
+		shotsPlanned += 1;
+	}
+
+	public void cancelFire(){
+		shotsPlanned -= 1;
 	}
 	
 	public float getDelay()

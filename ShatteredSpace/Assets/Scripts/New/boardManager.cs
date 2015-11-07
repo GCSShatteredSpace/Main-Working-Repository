@@ -24,7 +24,7 @@ public class boardManager : MonoBehaviour {
 
 	tile[,] board;
 
-    List<player> players;
+    List<player> players = new List<player>();
 
 
     void Start(){
@@ -204,13 +204,14 @@ public class boardManager : MonoBehaviour {
 			hit = true;
 		}
         // If damage is applied to a player
-        foreach(player p in players){
-            if (p.getPosition()==position){
-                damage.applyToPlayer(p);
-                hit = true;
-            }
-        }
-
+		if (players.Count == 2) {
+			foreach (player p in players) {
+				if (p.getPosition () == position) {
+					damage.applyToPlayer (p);
+					hit = true;
+				}
+			}
+		}
 		board [pos[0], pos[1]].addDamage (damage);
 		return hit;
 	}

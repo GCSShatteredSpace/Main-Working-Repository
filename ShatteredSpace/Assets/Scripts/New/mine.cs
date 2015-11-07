@@ -20,7 +20,7 @@ public class mine : weapon
 
 	// A very special weapon
 	public mine()
-		: base("mine", "mine", 10, 1, 0)
+		: base("mine", "mine", 10, 1, 0, 1)
 	{
 	}
 
