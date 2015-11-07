@@ -21,6 +21,8 @@ public class minigun : weapon
     static private int DAMAGE = 2;
     static private int RANGE = 2;
     static private int DELAY = 1;
+    static private int MAXSHOTS = 3;
+
     private List<FireInstance> shots;
     // The most basic weapon
     // Need to add recoil push after upgrades
@@ -28,7 +30,7 @@ public class minigun : weapon
    
 
     public minigun()
-        : base("minigun", "minigun", DAMAGE, RANGE, DELAY)
+        : base("minigun", "minigun", DAMAGE, RANGE, DELAY, MAXSHOTS)
     {
         shots = new List<FireInstance>();
     }
