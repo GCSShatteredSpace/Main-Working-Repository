@@ -82,7 +82,7 @@ public class weapon : MonoBehaviour
 		return distance<=range && distance!=0; 
 	}
 	
-	public bool readyToFire(){
+	public virtual bool readyToFire(){
 		return canFire;
 	}
 	
@@ -117,4 +117,10 @@ public class weapon : MonoBehaviour
 	public bool hasFired(){
 		return fired;
 	}
+
+	// Default weapons are not passive
+	public virtual bool isPassive(){
+		return false;
+	}
+
 }

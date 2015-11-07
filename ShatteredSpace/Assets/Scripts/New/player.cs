@@ -55,7 +55,7 @@ public class player : MonoBehaviour {
 		// Temp
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<sniperCannon> ();
+		currWeapon = this.gameObject.AddComponent<plasmaCutter> ();
 		currWeapon.setMaster(this);
 		photonView = PhotonView.Get (this);
 
@@ -76,8 +76,14 @@ public class player : MonoBehaviour {
 
 		// If we don't syncronize time first, weapons will be fired one step early
 		time=tManager.getTime();
+		// Start of turn
+		if (time==0){
+			if (currWeapon.isPassive() && currWeapon.readyToFire()){
+				currWeapon.fireWeapon(Vector2.zero,time);
+			}
+		}
 		startStep ();
-
+		// End of turn
 		if (time == -1) {
 			turn = tManager.getTurn ();
 			print ("Player end of turn!");
