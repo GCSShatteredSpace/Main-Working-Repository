@@ -63,17 +63,17 @@ public class weapon : MonoBehaviour
 		shotsPlanned = 0;
 	}
 	
-	public bool generateDamage(){
-		print ("generate damage!");
-		damageInfo newDamage = new damageInfo();
-		newDamage.damageAmount = damage;
-		newDamage.attacker = master;
-		bool hit = bManager.bomb (targetPosition,newDamage);
-		// Since the damage is generated, the weapon can take a rest
-		fired = false;
-		master.weaponHit ();
-        return hit;
-	}
+		public bool generateDamage(){
+			print ("generate damage!");
+			damageInfo newDamage = new damageInfo();
+			newDamage.damageAmount = damage;
+			newDamage.attacker = master;
+			bool hit = bManager.bomb (targetPosition,newDamage);
+			// Since the damage is generated, the weapon can take a rest
+			fired = false;
+			master.weaponHit ();
+	        return hit;
+		}
 	
 	public int getFireTime()
 	{
@@ -137,6 +137,14 @@ public class weapon : MonoBehaviour
 	// Default weapons are not passive
 	public virtual bool isPassive(){
 		return false;
+	}
+
+	public void setTargetPos(Vector2 newPos){
+		this.targetPosition = newPos;
+	}
+
+	public void setShotsPlanned(int num){
+		shotsPlanned = 0;	
 	}
 
 }

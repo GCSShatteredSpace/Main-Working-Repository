@@ -11,7 +11,12 @@ public struct FireInstance
     public FireInstance(int fireTime, Vector2 pos)
     {
         this.fireTime = fireTime;
-        this.targetPosition = pos;
+        if(pos == null){
+            this.targetPosition = new Vector2(0, 0);
+        }
+        else{
+                this.targetPosition = pos;
+            }
         this.generatedDamage = false;
     }
 }
@@ -45,20 +50,25 @@ public class minigun : weapon
                 if (tManager.getTime() == shot.fireTime && !shot.generatedDamage)
                 {
                     print("FireTime = " + shot.fireTime.ToString());
+                    setTargetPos(shot.targetPosition);
                     generateDamage();
                     shot.generatedDamage = false;
+                    print("dmg generated");
                     numDmgGenerated = 0;
                 }
             }
         }
     }
 
-    new public void fireWeapon(Vector2 pos, int time)
+    public override void fireWeapon(Vector2 pos, int time)
     {
-        print("Weapon fired!");
+        print("*****Weapon fired!*********");
         int fireTime = time + DELAY;
 
         FireInstance shot = new FireInstance(fireTime, pos);
         shots.Add(shot);
+        print(shots.Count.ToString());
+
+        setShotsPlanned(0);
     }
 }
