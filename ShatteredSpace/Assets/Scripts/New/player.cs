@@ -57,7 +57,7 @@ public class player : MonoBehaviour {
 		// Temp
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<sniperCannon> ();
+		currWeapon = this.gameObject.AddComponent<plasmaCutter> ();
 		currWeapon.setMaster(this);
 		photonView = PhotonView.Get (this);
 
