@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class turnManager : MonoBehaviour {
 	
+	const int maxPlayers=2;	// We will stick to 2 players for a long time
+
 	[SerializeField]statsManager dataBase;
 	[SerializeField]boardManager bManager;
 	[SerializeField]inputManager iManager;
@@ -11,12 +13,12 @@ public class turnManager : MonoBehaviour {
 	public event sendMessage sendNetworkMessage;
 	IEnumerator clockCoroutine;
 	
-	int readyPlayers;		// If it equals to num of players start turn
+	int readyPlayers = 0;		// If it equals to num of players start turn
 	[SerializeField]int finishedPlayers;	// If it equals to num of players end turn
 	[SerializeField]int time;
 	int turn;
 	bool turnStarted;
-	bool playerStopped;
+	int stoppedPlayers = 0;
 	
 	Vector2[] currentMovement = new Vector2[2];
 	Vector2[] currentExtraMovement = new Vector2[2];
@@ -99,7 +101,7 @@ public class turnManager : MonoBehaviour {
 		readyPlayers = 0;
 		finishedPlayers = 0;
 		turnStarted = false;
-		playerStopped = false;
+		stoppedPlayers = 0;
 		iManager.startNewTurn (players [0].getPosition ());
 		players [0].resetTurn ();
 		time = -1;
@@ -109,7 +111,8 @@ public class turnManager : MonoBehaviour {
 	// If both players stopped then it's end of turn stage
 	// Bombs might fall in this stage
 	public void stopMovement(){
-		
+		print (stoppedPlayers.ToString()+" players stopped!");
+		stoppedPlayers ++;
 	}
 
 	// Where players declare that they are done with everything!
@@ -128,6 +131,9 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
+		if (players.Count==maxPlayers){
+			bManager.setPlayers(players);
+		}
 	}
 	
 	// The player tells turnManager the next move
@@ -281,10 +287,10 @@ public class turnManager : MonoBehaviour {
 		List<damageInfo> damages = bManager.getTileDamage (pos);
 		List<damageInfo> tDamages = bManager.getTurretDamage (pos);
 		foreach(damageInfo d in damages){
-			p.receiveDamage(d.damageAmount);
+			p.takeDamage(d.damageAmount);
 		}
 		foreach (damageInfo d in tDamages) {
-			p.receiveDamage (d.damageAmount);
+			p.takeDamage (d.damageAmount);
 		}
 	}
 	void endCurrentStep (){
@@ -296,6 +302,6 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	public bool endOfPlayerMovement(){
-		return playerStopped;
+		return stoppedPlayers == PhotonNetwork.playerList.Length;
 	}
 }

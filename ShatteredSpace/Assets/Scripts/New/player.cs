@@ -31,6 +31,8 @@ public class player : MonoBehaviour {
 	// Temporary
 	weapon currWeapon;
 
+	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
+
 	void Awake () {
 		initPlayer ();
 	}
@@ -55,7 +57,7 @@ public class player : MonoBehaviour {
 		// Temp
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<mine> ();
+		currWeapon = this.gameObject.AddComponent<plasmaCutter> ();
 		currWeapon.setMaster(this);
 		photonView = PhotonView.Get (this);
 
@@ -76,8 +78,14 @@ public class player : MonoBehaviour {
 
 		// If we don't syncronize time first, weapons will be fired one step early
 		time=tManager.getTime();
+		// Start of turn
+		if (time==0){
+			if (currWeapon.isPassive() && currWeapon.readyToFire()){
+				currWeapon.fireWeapon(Vector2.zero,time);
+			}
+		}
 		startStep ();
-
+		// End of turn
 		if (time == -1) {
 			turn = tManager.getTurn ();
 			print ("Player end of turn!");
@@ -116,20 +124,22 @@ public class player : MonoBehaviour {
 		} else {
 			// No action left to do!
 			actions.Clear();
-			//print ("No action left! WaitCount: "+waitCount.ToString());
-
+			print ("No action left! WaitCount: " + waitCount.ToString());
+			if (!finishedTurn) tManager.stopMovement();
 			finishedTurn=true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
-			tManager.attemptToMove (Vector2.zero,Vector2.zero,playerIndex);
-			if (waitCount == 0){
+			tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
+			if (waitCount == 0 && momentum==Vector2.zero){
 				tManager.finishAction(playerIndex);
 			}
+			momentum = Vector2.zero;
 		}
 	}
 
 	public void resetTurn(){
 		finishedTurn = false;
+		momentum = Vector2.zero;
 	}
 
 	// The weapon tells the player that it's done
@@ -138,9 +148,13 @@ public class player : MonoBehaviour {
 		waitCount -= 1;
 	}
 
-	public void receiveDamage(int a){
-		print ("damage" + a);
-		energy -= a;
+	public void takeDamage(int amount){
+		energy-=amount;
+		if (energy<=0) die();
+	}
+
+	void die(){
+		print("Player" + playerName + "is destroyed!");
 	}
   	
 	// Called by turn manager
@@ -184,8 +198,9 @@ public class player : MonoBehaviour {
 		//Debug.Log(Time.time-currTime-time);
 	}
 
-	public weapon getWeapon(int weaponId){
-		return null;
+	public weapon getWeapon(){
+		// This is just temporary
+		return currWeapon;
 	}
 
 	public Vector2 getPosition(){
@@ -195,6 +210,13 @@ public class player : MonoBehaviour {
 
 	public void setPosition(Vector2 pos){
 		playerPosition = pos;
+	}
+
+	public void addMomentum(Vector2 push){
+		// Momentum shouldn't really add
+		// Cause it will break the game
+		momentum = push;
+		print("Gained momentum!");
 	}
 
 	public int getID(){

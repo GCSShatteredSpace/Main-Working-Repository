@@ -5,13 +5,12 @@ public class damageInfo : MonoBehaviour {
 	public int damageAmount;
 	public player attacker;
 	public weapon weaponFired;
-	public Vector2 push = new Vector2(); // If the damage contains a force that pushes or pulls the player
-	// Use this for initialization
-	void Start () {
-	
-	}
-	// Update is called once per frame
-	void Update () {
-	
+	public Vector2 push = Vector2.zero; // If the damage contains a force that pushes or pulls the player
+
+	public void applyToPlayer(player p){
+		p.takeDamage(damageAmount);
+        if (push!= Vector2.zero){
+            p.addMomentum(push);
+        }
 	}
 }
