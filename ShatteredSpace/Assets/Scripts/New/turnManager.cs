@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class turnManager : MonoBehaviour {
 	
+	const int maxPlayers=2;	// We will stick to 2 players for a long time
+
 	[SerializeField]statsManager dataBase;
 	[SerializeField]boardManager bManager;
 	[SerializeField]inputManager iManager;
@@ -11,18 +13,18 @@ public class turnManager : MonoBehaviour {
 	public event sendMessage sendNetworkMessage;
 	IEnumerator clockCoroutine;
 	
-	int readyPlayers;		// If it equals to num of players start turn
+	int readyPlayers = 0;		// If it equals to num of players start turn
 	[SerializeField]int finishedPlayers;	// If it equals to num of players end turn
 	[SerializeField]int time;
 	int turn;
 	bool turnStarted;
-	bool playerStopped;
+	int stoppedPlayers = 0;
 	
 	Vector2[] currentMovement = new Vector2[2];
 	Vector2[] currentExtraMovement = new Vector2[2];
 	bool[] readyForStep = new bool[2];
-	[SerializeField]List<player> players;
-	
+	[SerializeField] List<player> players;
+
 	void Start(){
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
@@ -99,7 +101,7 @@ public class turnManager : MonoBehaviour {
 		readyPlayers = 0;
 		finishedPlayers = 0;
 		turnStarted = false;
-		playerStopped = false;
+		stoppedPlayers = 0;
 		iManager.startNewTurn (players [0].getPosition ());
 		players [0].resetTurn ();
 		time = -1;
@@ -109,7 +111,8 @@ public class turnManager : MonoBehaviour {
 	// If both players stopped then it's end of turn stage
 	// Bombs might fall in this stage
 	public void stopMovement(){
-		
+		print (stoppedPlayers.ToString()+" players stopped!");
+		stoppedPlayers ++;
 	}
 
 	// Where players declare that they are done with everything!
@@ -128,18 +131,19 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
+		if (players.Count==maxPlayers){
+			bManager.setPlayers(players);
+		}
 	}
 	
 	// The player tells turnManager the next move
 	// When both players have done so, turnManager calculates what will happen in the 
 	public void attemptToMove(Vector2 movement, Vector2 extraMovement, int playerId){	// Dummy:1 myPlayer:0
 		if (!turnStarted) return; // Just in case
-		print ("Attempt to move!");
 		currentMovement [playerId] = movement;
 		currentExtraMovement [playerId] = extraMovement;
 		readyForStep [playerId] = true;
-		print ("Player num:");
-		print (PhotonNetwork.playerList.Length);
+		//print ("Number of Players: " + PhotonNetwork.playerList.Length);
 		if (PhotonNetwork.playerList.Length == 1) {
 			demoCalculateStepSequence();
 		}
@@ -150,7 +154,7 @@ public class turnManager : MonoBehaviour {
 	
 	//For tesing purposes only! Doesn't involve other players!
 	void demoCalculateStepSequence(){
-		print ("Demo calculate step sequence!");
+		//print ("Demo calculate step sequence!");
 		Vector2 nextPos = currentMovement [0] + players [0].getPosition();
 		List<Vector2> result = new List<Vector2> ();
 		if (bManager.isOccupied (nextPos)) {
@@ -169,12 +173,13 @@ public class turnManager : MonoBehaviour {
 		List<Vector2>[] velocitySequences= new List<Vector2>[2];
 		Vector2[] positions = new Vector2[2];
 		Vector2[] newPos = new Vector2[2];
-		for (int i=0; i<2; i++) {
-			positions [i] = players [i].getPosition ();
+		for (int i=0; i<2; i++) {	
+			positions[i] = players[i].getPosition ();
 			newPos[i] = positions[i] + currentMovement[i];
 		}
 		velocitySequences = calculateCollision(newPos,currentMovement);
-		players [0].moveStep (velocitySequences[0]); players [1].moveStep (velocitySequences[1]);
+		StartCoroutine(players[0].moveStep (velocitySequences[0]));
+		StartCoroutine(players[1].moveStep (velocitySequences[1]));
 		endCurrentStep ();
 	}
 	
@@ -192,13 +197,19 @@ public class turnManager : MonoBehaviour {
 			}
 		}
 		// Look for player collision
-		if (endPos [0] != endPos [1] &&
-		    // See if it's the tricky special case where players swap positions
-		    !(endPos [0] == endPos [1] - v [1] && endPos [1] == endPos [0] - v [0])) {
+		if (endPos [0] != endPos [1]){
 			result [0] = new List<Vector2>();
 			result [1] = new List<Vector2>();
 			result [0].Add (v [0]);
 			result [1].Add (v [1]);
+			return result;
+		} else if(endPos [0] == endPos [1] - v [1] && endPos [1] == endPos [0] - v [0]) {
+			// The tricky special case where players swap positions
+			result [0] = new List<Vector2>();
+			result [1] = new List<Vector2>();
+			// The 1/4 is just a magical number for the thing to look a little more realistic
+			result [0].Add (v [0]/4);result [0].Add (-v [0]/4);
+			result [1].Add (v [1]/4);result [1].Add (v [1]/4);
 			return result;
 		} else {
 			print ("Player collision!");
@@ -281,6 +292,6 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	public bool endOfPlayerMovement(){
-		return playerStopped;
+		return stoppedPlayers == PhotonNetwork.playerList.Length;
 	}
 }

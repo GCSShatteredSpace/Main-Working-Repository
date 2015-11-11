@@ -8,20 +8,23 @@ public class weapon : MonoBehaviour
 	public functionManager SS;
 	
 	// There is a protection level thing that I don't know how to sort out
-	public int damage;
-	public int range;
-	public int delay;	// The number of steps damage is generated after the weapon fired
-	public player master; // The player that the weapon belong to...
-	public string weaponName; 
-	public string description; 
-	public int fireTime; 
-	public bool canFire;
+	int damage;
+	int range;
+	int delay;	// The number of steps damage is generated after the weapon fired
+	player master; // The player that the weapon belong to...
+	string weaponName; 
+	string description; 
+	int fireTime; 
+
+	int shotsPlanned;
+	int numOfShots;	// Maximum time you can fire this weapon
 	
-	public bool fired;
-	public Vector2 targetPosition;
+	bool fired;
+	Vector2 targetPosition;
 	/*Note: intentionally did not include too many required fields in the abstract class. Can add more later if necessary */ 
 	
-	public weapon(string name, string description,int damage, int range, int delay) /* initiates a basic weapon object. Can override in a 
+	public weapon(string name, string description,
+		int damage, int range, int delay, int shots) /* initiates a basic weapon object. Can override in a 
                                                                                     subclass to construct a weapon with more fields */                                        
 	{
 		this.weaponName = name;
@@ -29,6 +32,7 @@ public class weapon : MonoBehaviour
 		this.damage = damage;
 		this.range = range;
 		this.delay = delay;
+		this.numOfShots = shots;
 	}
 	
 	void Awake(){
@@ -48,20 +52,23 @@ public class weapon : MonoBehaviour
 		}
 	}
 	
-	public void fireWeapon(Vector2 pos,int time){
+	public virtual void fireWeapon(Vector2 pos,int time){
 		print ("Weapon fired!");
 		fired = true;
 		// Cause damage is generated at the end of current step
 		fireTime = time+delay;
 		targetPosition = pos;
+
+		// The turn has started, so reset this for the next turn
+		shotsPlanned = 0;
 	}
 	
-	public void generateDamage(){
+	void generateDamage(){
 		print ("generate damage!");
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = damage;
 		newDamage.attacker = master;
-		bManager.bomb (targetPosition,newDamage);
+		bool hit = bManager.bomb (targetPosition,newDamage);
 		// Since the damage is generated, the weapon can take a rest
 		fired = false;
 		master.weaponHit ();
@@ -77,13 +84,21 @@ public class weapon : MonoBehaviour
 		return this.damage; 
 	}
 	
-	public bool isInRange(int distance)
+	public virtual bool isInRange(int distance)
 	{
 		return distance<=range && distance!=0; 
 	}
 	
-	public bool readyToFire(){
-		return canFire;
+	public virtual bool readyToFire(){
+		return numOfShots > shotsPlanned;
+	}
+
+	public void planToFire(){
+		shotsPlanned += 1;
+	}
+
+	public void cancelFire(){
+		shotsPlanned -= 1;
 	}
 	
 	public float getDelay()
@@ -100,4 +115,27 @@ public class weapon : MonoBehaviour
 	{
 		return this.description; 
 	}
+
+	public void setFired(bool value)
+	{
+		fired = value;
+	}
+
+	public player getMaster(){
+		return master;
+	}
+
+	public void setMaster(player p){
+		master = p;
+	}
+
+	public bool hasFired(){
+		return fired;
+	}
+
+	// Default weapons are not passive
+	public virtual bool isPassive(){
+		return false;
+	}
+
 }

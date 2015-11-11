@@ -11,6 +11,7 @@ public class boardManager : MonoBehaviour {
 
     public Vector2[] direction;
     const float ratio = 0.8666f; // Sqrt(3)/2
+    const float epsilon = 0.01f; // Good enough for our purposes
 	float tileSize;
 
 
@@ -24,6 +25,8 @@ public class boardManager : MonoBehaviour {
 	[SerializeField] GameObject blastShieldGameObj;
 
 	tile[,] board;
+
+    List<player> players = new List<player>();
 
 
     void Start(){
@@ -124,27 +127,43 @@ public class boardManager : MonoBehaviour {
         Vector3 targetPos = SS.hexPositionTransform(targetPosition);
         Vector3 barrierPos;
         float dis;
+		bool possibleBlock = false;
         for (int i=0; i<barrierSpawnPoint.Length; i++) {
 			barrierPos = SS.hexPositionTransform (barrierSpawnPoint [i]);
-			if ((firePos.x <= barrierPos.x) && 
-				(targetPos.x >= barrierPos.x) &&
-				(firePos.y <= barrierPos.y) && 
-				(targetPos.y >= barrierPos.y)) { //make sure the barrier is inside the parallelogram
+			if (isInBound(firePos.x,firePos.y,
+                targetPos.x,targetPos.y,
+                barrierPos.x,barrierPos.y)) { //make sure the barrier is inside the parallelogram
 				dis = DistancePointLine (barrierPos, firePos, targetPos);
-				if (dis < tileSize / 2) {
+				if (dis < tileSize / 2 - epsilon) {
 					return true; //the projectile cut through one 
-				} else if (dis == tileSize / 2) {   // Nice try! There's actually a (Mathematically speaking) simple solution:
-					count++;                    // if dis==piecesize/2 (or almostEqual) nudge the target a little bit away from the current barrier
-				}                               // And run this thing again!
-			}
-			if (count > 1) { //the projectile cuts through the tangent of multiple barriers
-				//actually this idea is bugged in some barrier formations
-				return true;
+				} else if (almostEqual(dis,tileSize / 2)) { // We need to be careful when the line is tangent to the circle
+					possibleBlock = true;
+				}                              
 			}
 		}
-        return false;
+		if (possibleBlock) {
+			Vector2 tempTgt1,tempTgt2;
+			tempTgt1=targetPosition+Vector2.left * 0.5f;	// Nudge the target a little bit to the left
+			tempTgt2=targetPosition+Vector2.right * 0.5f;	// Nudge the target a little bit to the right
+			// If both ways are blocked, it's blocked; If not, it's not blocked
+			return isBlocked(firePosition,tempTgt1) && isBlocked(firePosition,tempTgt2);
+		}
+		return false;
     }
 
+    bool almostEqual(float a, float b){
+        return Mathf.Abs(a-b)<=epsilon;
+    }
+
+    bool isInBound(float x1, float y1, float x2, float y2, float x,float y){
+        float temp;
+        if (x1>x2){temp = x1; x1 = x2; x2 = temp;}
+        if (y1>y2){temp = y1; y1 = y2; y2 = temp;}
+        return (x1 < x + epsilon) && 
+                (x2 > x - epsilon) && 
+                (y1 < y + epsilon) && 
+                (y2 > y - epsilon);
+    }
     /*
      * Returns whether the tile is occupied by barriers or turrets
      */
@@ -167,23 +186,44 @@ public class boardManager : MonoBehaviour {
         int range = dataBase.turretRange;
         float turretX;
         float turretY;
-        for (int i=0;i<turretSpawnPoint.Length;i++){
-            if (SS.getDistance(turretSpawnPoint[i],pos)<=range){    // Use the functions in SS!
+		List<int> turretPos;
+
+        for (int i = 0;i < turretSpawnPoint.Length;i++){
+			turretPos = vecToBoard(turretSpawnPoint[i]);
+			if (SS.getDistance(turretSpawnPoint[i],pos) <= range 
+			    && board [turretPos [0], turretPos [1]].turretIsActivated ()){    // Use the functions in SS!
                 return true;
             }
         }
         return false;        
     }
 
-	public void bomb(Vector2 position,damageInfo damage){
+	public bool bomb(Vector2 position,damageInfo damage){
+		bool hit = false;
 		List<int> pos = vecToBoard (position);
 		//print ("bomb!");
-		//print (new Vector2(pos[0],pos[1]));
+		print ("Bomb:" + (new Vector2(pos[0],pos[1])).ToString());
+
+        // If damage is applied to a turret
 		if (board [pos [0], pos [1]].turretIsActivated ()) {
 			board [pos [0], pos [1]].getTurret().takeDamage(damage);
+			hit = true;
+		}
+        // If damage is applied to a player
+		if (players.Count == 2) {
+			foreach (player p in players) {
+				if (p.getPosition () == position) {
+					damage.applyToPlayer (p);
+					hit = true;
+				}
+			}
 		}
 		board [pos[0], pos[1]].addDamage (damage);
+<<<<<<< HEAD
         (new AnimationController()).explode( position, Quaternion.identity);
+=======
+		return hit;
+>>>>>>> 0eb283762eeb4089d10a25042792cdda7c5fe4f1
 	}
 
 	/*
@@ -201,6 +241,10 @@ public class boardManager : MonoBehaviour {
 	public Vector2[] barrierGetter(){
 		return barrierSpawnPoint;
 	}
+
+    public void setPlayers(List<player> playerList){
+        players=playerList;
+    }
 
 	public tile getTile(Vector2 position){
 		List<int> pos = vecToBoard (position);

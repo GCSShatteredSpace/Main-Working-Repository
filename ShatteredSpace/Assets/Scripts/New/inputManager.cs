@@ -8,10 +8,13 @@ public class inputManager : MonoBehaviour {
 	turnManager tManager;
 	player myPlayer;
 
+	bool myPlayerIsSet;
+
 	public Stack<action> commands = new Stack<action>();
 	int moveIndex;
 	Vector2 playerPosition;	// Where players end up after each step
 	Vector2 firePosition;	// Sometimes players fire at a position and move because of recoil
+	Vector2 noAttack = new Vector2 (.5f, .5f);
 
 	bool isTargeting;				// Click and drag to pick targets
 	Vector3 targetStart;
@@ -21,13 +24,14 @@ public class inputManager : MonoBehaviour {
 	bool commandable;
 	int maxSteps;
 	
-	void Start () {
+	void Start () { 
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
 		tManager = GetComponent<turnManager> ();
 		SS = GetComponent<functionManager> ();
 
 		targetLine = GetComponent <LineRenderer> ();
+		myPlayerIsSet = false;
 		// Only temporary
 		commandable = false;
 		maxSteps = 10;
@@ -36,6 +40,7 @@ public class inputManager : MonoBehaviour {
 
 	public void setMyPlayer(player p){
 		myPlayer = p;
+		myPlayerIsSet = true;
 	}
 
 	void Update () {
@@ -56,12 +61,12 @@ public class inputManager : MonoBehaviour {
 
 		action newAction = new action();
 		newAction.movement = playerPosition;
-		newAction.attack = new Vector2 (.5f, .5f);
+		newAction.attack = noAttack;
 		newAction.weaponId = 0;
 
 		commands.Push (newAction);
 
-		targetEnd = new Vector3 (.5f, .5f, 0);
+		targetEnd = noAttack;
 		targetStart = playerPosition;
 		targetLine.enabled = false;
 		commandable = true;
@@ -71,7 +76,7 @@ public class inputManager : MonoBehaviour {
 		//Debug.Log("Command added!");
 		moveIndex++;
 		action newAction = new action ();
-		newAction.attack = new Vector2(.5f,.5f);//(0.5,0.5) basically stands for "nothing"
+		newAction.attack = noAttack;
 		newAction.movement = pos;
 		playerPosition = pos;
 
@@ -83,6 +88,8 @@ public class inputManager : MonoBehaviour {
 	public void attackCommand(Vector2 pos){		// Choose the attack target for this step
 		//Debug.Log("Attack!");
 		action lastAction = commands.Pop();
+		if (lastAction.attack == noAttack)
+			myPlayer.getWeapon ().planToFire ();
 		lastAction.attack = pos;
 		lastAction.weaponId = currentWeapon;
 
@@ -100,7 +107,7 @@ public class inputManager : MonoBehaviour {
 			//print("Command removed!");
 			moveIndex--;
 			commands.Pop();
-			print(commands.Count);
+			//print(commands.Count);
 			action lastAction = commands.Peek();
 			playerPosition = lastAction.movement;
 			firePosition = playerPosition-lastAction.extraMovement;
@@ -131,6 +138,7 @@ public class inputManager : MonoBehaviour {
 		commands.Push(lastAction);
 
 		targetLine.enabled = false;
+		myPlayer.getWeapon ().cancelFire ();
 
 	}
 
@@ -176,6 +184,11 @@ public class inputManager : MonoBehaviour {
 		return commandable;
 	}
 
+	public player getMyPlayer(){
+		return myPlayer;
+	}
+
+	// This is redundent
 	public int getWeaponId(){
 		return currentWeapon;
 	}
@@ -185,7 +198,7 @@ public class inputManager : MonoBehaviour {
 	}
 
 	public bool hasAttackLeft(){
-		return true;	// Tempoary solution
+		return myPlayer.getWeapon().readyToFire();
 	}
 
 	public Vector2 getPlayerPosition(){
