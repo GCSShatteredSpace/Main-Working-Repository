@@ -12,6 +12,8 @@ public class boardManager : MonoBehaviour {
     public Vector2[] direction;
     const float ratio = 0.8666f; // Sqrt(3)/2
 	float tileSize;
+
+
     [SerializeField] statsManager dataBase;
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
     [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
@@ -181,6 +183,7 @@ public class boardManager : MonoBehaviour {
 			board [pos [0], pos [1]].getTurret().takeDamage(damage);
 		}
 		board [pos[0], pos[1]].addDamage (damage);
+        (new AnimationController()).explode( position, Quaternion.identity);
 	}
 
 	/*
