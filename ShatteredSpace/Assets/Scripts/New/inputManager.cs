@@ -7,6 +7,7 @@ public class inputManager : MonoBehaviour {
 	functionManager SS;
 	turnManager tManager;
 	player myPlayer;
+	GameObject buildButton;
 
 	bool myPlayerIsSet;
 
@@ -32,8 +33,12 @@ public class inputManager : MonoBehaviour {
 
 		targetLine = GetComponent <LineRenderer> ();
 		myPlayerIsSet = false;
+
+		buildButton = GameObject.Find("armoryOn");
+
 		// Only temporary
 		commandable = false;
+		buildButton.SetActive (false);
 		maxSteps = 10;
 		// Only temporary
 	}
@@ -48,7 +53,8 @@ public class inputManager : MonoBehaviour {
 			// Temporary code
 			tManager.getReady();
 			myPlayer.setActionSequence(commands);
-			commandable=false;
+			commandable = false;
+			buildButton.SetActive (false);
 		}
 	}
 
@@ -70,6 +76,9 @@ public class inputManager : MonoBehaviour {
 		targetStart = playerPosition;
 		targetLine.enabled = false;
 		commandable = true;
+
+		buildButton.SetActive (true);
+
 	}
 
 	public void moveCommand(Vector2 pos) {	// Add a movement step
@@ -185,7 +194,11 @@ public class inputManager : MonoBehaviour {
 	}
 
 	public player getMyPlayer(){
-		return myPlayer;
+		if (myPlayerIsSet) {
+			return myPlayer;
+		} else {
+			return null;
+		}
 	}
 
 	// This is redundent
