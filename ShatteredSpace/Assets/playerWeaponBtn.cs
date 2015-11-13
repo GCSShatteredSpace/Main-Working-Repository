@@ -26,6 +26,9 @@ public class playerWeaponBtn : MonoBehaviour {
 
 	public void setChosen(bool value){
 		chosen = value;
+		if (value) {
+			this.gameObject.GetComponentInParent<playerWpnMenu>().setPlayerWeapon();
+		}
 		display ();
 	}
 

@@ -10,6 +10,9 @@ public class playerWpnMenu : MonoBehaviour {
 	[SerializeField] GameObject buttonObject;
 	[SerializeField] Transform canvas;
 
+	player myPlayer;
+	bool playerIsSet= false;	// There must be better ways to do it but I only know the most straight forward one.
+
 	// The positions for generating a new button
 	const int spacing = 50;
 	int posY = -50 ;
@@ -38,14 +41,16 @@ public class playerWpnMenu : MonoBehaviour {
 		button.setWpnID (wpnID);
 	}
 
-	public int getBtnID(){
+	public void setPlayerWeapon(){
+		int weaponID = 0;
 		for(int i=0; i < buttons.Count; i++) {
 			if(buttons[i].isChosen()){
-				return i;
+				weaponID = buttons[i].getWeaponID();
+				break;
 			}
 		}
-		Debug.Log ("No weapon selected!?");
-		return 0;
+		if (playerIsSet)
+			myPlayer.setWeapon (weaponID);
 	}
 
 	public void setMenuState(){
@@ -56,5 +61,8 @@ public class playerWpnMenu : MonoBehaviour {
 		}
 	}
 
-
+	public void setMyPlayer(player p){
+		myPlayer = p;
+		playerIsSet = true;
+	}
 }

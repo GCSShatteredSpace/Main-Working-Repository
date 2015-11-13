@@ -23,21 +23,21 @@ public class statsManager : MonoBehaviour {
 		weapons.Add (this.gameObject.AddComponent<blastArray> ());
 
 		// Explosive weapons 4~7
-		weapons.Add (new grenade());
-		weapons.Add (new mine());
-		weapons.Add (new antibodyGrenade());
-		weapons.Add (new combustionThruster());
+		weapons.Add (this.gameObject.AddComponent<grenade>());
+		weapons.Add (this.gameObject.AddComponent<mine>());
+		weapons.Add (this.gameObject.AddComponent<antibodyGrenade>());
+		weapons.Add (this.gameObject.AddComponent<combustionThruster>());
 
 		// Particle weapons 8~11
-		weapons.Add (new laser());
-		weapons.Add (new laserArray());
-		weapons.Add (new particleBeam());
-		weapons.Add (new plasmaCutter());
+		weapons.Add (this.gameObject.AddComponent<laser>());
+		weapons.Add (this.gameObject.AddComponent<laserArray>());
+		weapons.Add (this.gameObject.AddComponent<particleBeam>());
+		weapons.Add (this.gameObject.AddComponent<plasmaCutter>());
 
 		// Field weapons 12~15
-		weapons.Add (new gravityTrap());
-		weapons.Add (new deflectorShield());
-		weapons.Add (new shockCannon());
-		weapons.Add (new thermalField());
+		weapons.Add (this.gameObject.AddComponent<gravityTrap>());
+		weapons.Add (this.gameObject.AddComponent<deflectorShield>());
+		weapons.Add (this.gameObject.AddComponent<shockCannon>());
+		weapons.Add (this.gameObject.AddComponent<thermalField>());
 	}
 }
