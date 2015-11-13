@@ -34,6 +34,7 @@ public class player : MonoBehaviour {
 
 	List<weapon> weapons = new List<weapon> ();
 	List<int> weaponList = new List<int>();
+	playerWpnMenu playerMenu;
 
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
 
@@ -59,20 +60,24 @@ public class player : MonoBehaviour {
 		// are done in a stepTime
 		speed = 3 / database.stepTime;
 		// Temp
-		// You have to add it as a component for the Update and Start methods to run
-		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<grenade> ();
-		currWeapon.setMaster(this);
+
 		photonView = PhotonView.Get (this);
 
+		// You have to add it as a component for the Update and Start methods to run
+		// Pretty disturbing if you think about it...
 		// All players start with blaster
+		currWeapon = database.weapons[0];
+		currWeapon.setMaster(this);
+		//print ("typeof:" + currWeapon.GetType().ToString ());
 		weaponList.Add (0);
-		weapons.Add (database.weapons [0]);
+		weapons.Add (currWeapon);
+		print(weapons[0].ToString());
 
 		//distinguishes which player is to be controlled
 		if (photonView.isMine) {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
+			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
 		} else {
 			playerIndex = 1;
 		}
@@ -215,6 +220,13 @@ public class player : MonoBehaviour {
 		return currWeapon;
 	}
 
+	// This integer is the index of the button
+	// Which is also the index of the weapon in the list weapons
+	// Because btns and weapons are added at the same time
+	public void setWeapon(int weaponIndexInList){
+		currWeapon = weapons [weaponIndexInList];
+	}
+
 	public Vector2 getPosition(){
 		//print ("player pos" + playerPosition);
 		return playerPosition;
@@ -242,7 +254,8 @@ public class player : MonoBehaviour {
 
 	public void addWeapon(int wpnID){
 		weaponList.Add (wpnID);
-		weapons.Add (database.weapons [wpnID]);
+		weapons.Add (database.weapons[wpnID]);
+		playerMenu.addWeapon (wpnID);
 	}
 
 	public bool hasWeapon(int wpnID){
