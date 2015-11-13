@@ -145,7 +145,7 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
-		if (players.Count==maxPlayers){
+		if (players.Count == maxPlayers){
 			bManager.setPlayers(players);
 		}
 	}
