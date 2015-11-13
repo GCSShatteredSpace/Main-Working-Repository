@@ -266,7 +266,7 @@ public class boardManager : MonoBehaviour {
 		if (isDangerous (v)) {
 			List<turret> turretList = this.getAttackingTurrets (v);
 			foreach (turret t in turretList) {
-			//	this.bomb (v,t.getDamage());
+				this.bomb (v,t.getDamage());
 			}
 		}
 	}
