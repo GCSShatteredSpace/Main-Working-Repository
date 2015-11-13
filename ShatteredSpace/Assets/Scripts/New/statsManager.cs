@@ -17,10 +17,10 @@ public class statsManager : MonoBehaviour {
 
 	void Start(){
 		// Momentum weapons 0~3
-		weapons.Add (new blaster ());
-		weapons.Add (new sniperCannon ());
-		weapons.Add (new minigun ());
-		weapons.Add (new blastArray ());
+		weapons.Add (this.gameObject.AddComponent<blaster> ());
+		weapons.Add (this.gameObject.AddComponent<sniperCannon> ());
+		weapons.Add (this.gameObject.AddComponent<minigun> ());
+		weapons.Add (this.gameObject.AddComponent<blastArray> ());
 
 		// Explosive weapons 4~7
 		weapons.Add (new grenade());

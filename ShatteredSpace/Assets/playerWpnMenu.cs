@@ -38,12 +38,14 @@ public class playerWpnMenu : MonoBehaviour {
 		button.setWpnID (wpnID);
 	}
 
-	public void getWeaponID(){
-		foreach (playerWeaponBtn button in buttons) {
-			if(button.isChosen(){
-				return button.getWeaponID();
+	public int getBtnID(){
+		for(int i=0; i < buttons.Count; i++) {
+			if(buttons[i].isChosen()){
+				return i;
 			}
 		}
+		Debug.Log ("No weapon selected!?");
+		return 0;
 	}
 
 	public void setMenuState(){

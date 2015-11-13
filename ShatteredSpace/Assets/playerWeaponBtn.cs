@@ -16,7 +16,7 @@ public class playerWeaponBtn : MonoBehaviour {
 	[SerializeField] Button button;
 	[SerializeField] Text btnText;
 
-	[SerializeField] bool isChosen = false;
+	[SerializeField] bool chosen = false;
 
 	void Start(){
 //		button = this.gameObject.GetComponent<Button> ();
@@ -25,7 +25,7 @@ public class playerWeaponBtn : MonoBehaviour {
 	}
 
 	public void setChosen(bool value){
-		isChosen = value;
+		chosen = value;
 		display ();
 	}
 
@@ -36,7 +36,7 @@ public class playerWeaponBtn : MonoBehaviour {
 
 	void display(){
 		ColorBlock btnColors = button.colors;
-		if (isChosen) {
+		if (chosen) {
 			btnColors.normalColor = chosenColor;
 			btnColors.highlightedColor = chosenColor;	// This looks better
 			button.colors = btnColors;
@@ -45,6 +45,10 @@ public class playerWeaponBtn : MonoBehaviour {
 			btnColors.highlightedColor = normalMouseOver;
 			button.colors = btnColors;
 		}
+	}
+
+	public bool isChosen(){
+		return chosen;
 	}
 
 	public int getWeaponID(){
