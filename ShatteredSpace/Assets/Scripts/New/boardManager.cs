@@ -25,7 +25,7 @@ public class boardManager : MonoBehaviour {
 	tile[,] board;
 
     List<player> players = new List<player>();
-
+	List<turret> turrets = new List<turret>();
 
     void Start(){
         tileSize = dataBase.tileSize;
@@ -79,6 +79,7 @@ public class boardManager : MonoBehaviour {
 			GameObject instance = Instantiate(turretGameObj,spawnPosition,Quaternion.LookRotation(Vector3.up)) as GameObject;
 			turret currTurret = instance.GetComponent<turret>();
 			board[x,y].setTurret(currTurret);
+			turrets.Add(currTurret);
 			currTurret.setPos(pos);
 		}
 		// Spawn balst shields
@@ -196,6 +197,19 @@ public class boardManager : MonoBehaviour {
         return false;        
     }
 
+	public List<turret> getAttackingTurrets(Vector2 pos){
+		List<turret> attackers = new List<turret>();
+		int range = dataBase.turretRange;
+		float turretX;
+		float turretY;
+		for (int i=0;i<turretSpawnPoint.Length;i++){
+			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){   
+				attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+			}
+		}
+		return attackers;        
+	}
+
 	public bool bomb(Vector2 position,damageInfo damage){
 		bool hit = false;
 		List<int> pos = vecToBoard (position);
@@ -243,5 +257,14 @@ public class boardManager : MonoBehaviour {
 	public tile getTile(Vector2 position){
 		List<int> pos = vecToBoard (position);
 		return board [pos[0], pos[1]];
+	}
+
+	public void doTurretDamage(Vector2 v){
+		if (isDangerous (v)) {
+			List<turret> turretList = this.getAttackingTurrets (v);
+			foreach (turret t in turretList) {
+			//	this.bomb (v,t.getDamage());
+			}
+		}
 	}
 }

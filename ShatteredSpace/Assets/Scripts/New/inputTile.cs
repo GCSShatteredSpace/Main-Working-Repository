@@ -217,8 +217,8 @@ public class inputTile : MonoBehaviour {
 			Rect bounds = new Rect (Screen.width/2 + center.x*warningRatio - warningSize / 2, 
 			                        Screen.height/2 - center.y*warningRatio - warningSize / 2 - vertOffset,
 			                        warningSize, warningSize);
-
-			GUI.DrawTexture (bounds, warning);
+			//I get lots of errors if I leave this uncommented. Apparently warning is set to null
+			//GUI.DrawTexture (bounds, warning);
 		}
 	}
 
