@@ -7,7 +7,7 @@ public class player : MonoBehaviour {
 	[SerializeField]inputManager iManager;
 	[SerializeField]turnManager tManager;
 	[SerializeField]functionManager SS;
-	[SerializeField]statsManager dataBase;
+	[SerializeField]statsManager database;
 
 	PhotonView photonView;
 	
@@ -29,7 +29,11 @@ public class player : MonoBehaviour {
 	bool finishedTurn;
 	int waitCount;	// Keeps track of the num of weapons that are not done
 	// Temporary
+
 	weapon currWeapon;
+
+	List<weapon> weapons = new List<weapon> ();
+	List<int> weaponList = new List<int>();
 
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
 
@@ -44,7 +48,7 @@ public class player : MonoBehaviour {
 		iManager = gameController.GetComponent<inputManager> ();
 		tManager = gameController.GetComponent<turnManager> ();
 		SS = gameController.GetComponent<functionManager> ();
-		dataBase = GameObject.Find ("stats").GetComponent<statsManager> ();
+		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 		
 		myPlayer = this.gameObject;
 		time = -1;
@@ -53,13 +57,17 @@ public class player : MonoBehaviour {
 		// This is not a permanent solution
 		// But it sure ensure that all movements (espeacially ones involving collisions)
 		// are done in a stepTime
-		speed = 3 / dataBase.stepTime;
+		speed = 3 / database.stepTime;
 		// Temp
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<plasmaCutter> ();
+		currWeapon = this.gameObject.AddComponent<grenade> ();
 		currWeapon.setMaster(this);
 		photonView = PhotonView.Get (this);
+
+		// All players start with blaster
+		weaponList.Add (0);
+		weapons.Add (database.weapons [0]);
 
 		//distinguishes which player is to be controlled
 		if (photonView.isMine) {
@@ -225,6 +233,19 @@ public class player : MonoBehaviour {
 	public void setID(int i){
 		playerGameID = i;
 		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
+	}
+
+	public void addWeapon(int wpnID){
+		weaponList.Add (wpnID);
+		weapons.Add (database.weapons [wpnID]);
+	}
+
+	public bool hasWeapon(int wpnID){
+		if (weaponList.Contains (wpnID)) {
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	[PunRPC]
