@@ -184,7 +184,6 @@ public class player : MonoBehaviour {
 				// Up till this point everything only exists in data
 				// move displays the data
 				StartCoroutine(move(playerPosition+vSequence[i],time));
-				tManager.playerTakeTurretDamage(this);
 				yield return new WaitForSeconds(time);
 			}
 
