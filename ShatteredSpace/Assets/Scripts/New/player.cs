@@ -108,7 +108,8 @@ public class player : MonoBehaviour {
 
 	void startStep (){
 		//print ("Prepare to move!");
-		if (actions.Count > 0 && !finishedTurn) {
+		action[] a = actions.ToArray ();
+		if (actions.Count > 0) {
 			action currentAction = actions.Pop();
 //			print ("current attack: "+currentAction.attack.ToString());
 			if(currentAction.attack!=new Vector2(0.5f,0.5f)){
@@ -117,20 +118,24 @@ public class player : MonoBehaviour {
 				waitCount+=1;
 			}
 			if (actions.Count > 0){
+		//		print (this.playerIndex + " " + actions.Peek().movement.ToString());
 				Vector2 velocity = actions.Peek().movement-currentAction.movement;
-				// Attention! Action contain position while we need velocity!
+				// Action contain position while we need velocity!
 				tManager.attemptToMove (velocity,currentAction.extraMovement,playerIndex);
+			} else {
+				tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
 			}
 		} else {
 			// No action left to do!
-			actions.Clear();
 			print ("No action left! WaitCount: " + waitCount.ToString());
-			if (!finishedTurn) tManager.stopMovement();
+			if (!finishedTurn){
+				tManager.stopMovement();
+			}
 			finishedTurn=true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
 			tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
-			if (waitCount == 0 && momentum==Vector2.zero){
+			if (waitCount == 0 && momentum == Vector2.zero){
 				tManager.finishAction(playerIndex);
 			}
 			momentum = Vector2.zero;
@@ -154,7 +159,7 @@ public class player : MonoBehaviour {
 	}
 
 	void die(){
-		print("Player" + playerName + "is destroyed!");
+		print("Player " + playerName + " is destroyed!");
 	}
   	
 	// Called by turn manager
@@ -166,7 +171,7 @@ public class player : MonoBehaviour {
 				// Up till this point everything only exists in data
 				// move displays the data
 				StartCoroutine(move(playerPosition+vSequence[i],time));
-				tManager.playerTakeDamage(this);
+				tManager.playerTakeTurretDamage(this);
 				yield return new WaitForSeconds(time);
 			}
 
