@@ -219,11 +219,8 @@ public class boardManager : MonoBehaviour {
 			}
 		}
 		board [pos[0], pos[1]].addDamage (damage);
-<<<<<<< HEAD
-        (new AnimationController()).explode( position, Quaternion.identity);
-=======
+        //(new AnimationController()).explode( position, Quaternion.identity);
 		return hit;
->>>>>>> 0eb283762eeb4089d10a25042792cdda7c5fe4f1
 	}
 
 	/*
