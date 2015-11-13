@@ -143,7 +143,8 @@ public class inputTile : MonoBehaviour {
 
 		// If the player chose to stay here, s/he is in trouble
 		if (current && bManager.isDangerous (tilePosition)) {
-			dangerous = true;
+			// Let's unenable it for now because it gets in the way of our awesome menu
+			//dangerous = true;
 		} else {
 			dangerous = false;
 		}

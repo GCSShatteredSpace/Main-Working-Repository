@@ -34,6 +34,8 @@ public class grenade : weapon {
 		print ("Grenade in the air!");
 		this.setFired(true);
 		bombPos.Add(pos);
+
+		this.setShotsPlanned (0);
 	}
 
 	// Overwrite!

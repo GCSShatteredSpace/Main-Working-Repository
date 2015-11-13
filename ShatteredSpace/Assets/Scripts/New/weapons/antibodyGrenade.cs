@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class blaster : weapon { 
+public class antibodyGrenade : weapon { 
 	// The most basic weapon
 	// Need to add recoil push after upgrades
-	public blaster():base("Blaster","blaster",5,5,1,1){
+	public antibodyGrenade():base("Antibody Grenade","Antibody Grenade",5,5,1,1){
 	}
 }

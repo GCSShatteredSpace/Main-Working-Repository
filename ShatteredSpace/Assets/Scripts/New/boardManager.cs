@@ -13,6 +13,8 @@ public class boardManager : MonoBehaviour {
     const float ratio = 0.8666f; // Sqrt(3)/2
     const float epsilon = 0.01f; // Good enough for our purposes
 	float tileSize;
+
+
     [SerializeField] statsManager dataBase;
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
     [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
@@ -231,6 +233,7 @@ public class boardManager : MonoBehaviour {
 			}
 		}
 		board [pos[0], pos[1]].addDamage (damage);
+        //(new AnimationController()).explode( position, Quaternion.identity);
 		return hit;
 	}
 

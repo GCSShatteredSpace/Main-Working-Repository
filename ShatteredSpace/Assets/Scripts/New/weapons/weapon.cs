@@ -59,11 +59,11 @@ public class weapon : MonoBehaviour
 		fireTime = time+delay;
 		targetPosition = pos;
 
-		// The turn has started, so reset this for the next turn
-		shotsPlanned = 0;
+		// The turn has started, so reset for the next turn
+		setShotsPlanned(0);
 	}
 	
-	void generateDamage(){
+	public void generateDamage(){
 		print ("generate damage!");
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = damage;
@@ -83,12 +83,14 @@ public class weapon : MonoBehaviour
 	{
 		return this.damage; 
 	}
-	
+
+	// Can be overrided by special ranged weapon like sniperCannon
 	public virtual bool isInRange(int distance)
 	{
 		return distance<=range && distance!=0; 
 	}
-	
+
+	// Can be overrided by weapons with overheat
 	public virtual bool readyToFire(){
 		return numOfShots > shotsPlanned;
 	}
@@ -125,6 +127,10 @@ public class weapon : MonoBehaviour
 		return master;
 	}
 
+	public int getRange(){
+		return range;
+	}
+
 	public void setMaster(player p){
 		master = p;
 	}
@@ -138,4 +144,15 @@ public class weapon : MonoBehaviour
 		return false;
 	}
 
+	public void setTargetPos(Vector2 newPos){
+		this.targetPosition = newPos;
+	}
+
+	public void setShotsPlanned(int num){
+		shotsPlanned = num;
+	}
+
+	public string getDescription(){
+		return description;
+	}
 }
