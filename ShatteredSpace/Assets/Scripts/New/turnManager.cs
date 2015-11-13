@@ -88,6 +88,9 @@ public class turnManager : MonoBehaviour {
 	
 	// Where we actually end the turn
 	void endTurn(){
+		foreach (player p in players) {
+			playerTakeTurretDamage (p);
+		}
 		print ("end turn!");
 		// Note the difference between start and stop coroutine!!
 		StopCoroutine ("clock");
