@@ -34,6 +34,7 @@ public class player : MonoBehaviour {
 
 	List<weapon> weapons = new List<weapon> ();
 	List<int> weaponList = new List<int>();
+	playerWpnMenu playerMenu;
 
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
 
@@ -73,6 +74,7 @@ public class player : MonoBehaviour {
 		if (photonView.isMine) {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
+			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
 		} else {
 			playerIndex = 1;
 		}
@@ -244,6 +246,7 @@ public class player : MonoBehaviour {
 	public void addWeapon(int wpnID){
 		weaponList.Add (wpnID);
 		weapons.Add (database.weapons [wpnID]);
+		playerMenu.addWeapon (wpnID);
 	}
 
 	public bool hasWeapon(int wpnID){
