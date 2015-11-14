@@ -17,6 +17,7 @@ public class boardManager : MonoBehaviour {
 
     [SerializeField] statsManager dataBase;
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
+    [SerializeField] AnimationController anim;
     [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
     [SerializeField] Vector2[] barrierSpawnPoint = new Vector2[12]; // Barrier numbers may vary
 
@@ -233,7 +234,7 @@ public class boardManager : MonoBehaviour {
 			}
 		}
 		board [pos[0], pos[1]].addDamage (damage);
-        //(new AnimationController()).explode( position, Quaternion.identity);
+        anim.explode( position, Quaternion.identity);
 		return hit;
 	}
 
