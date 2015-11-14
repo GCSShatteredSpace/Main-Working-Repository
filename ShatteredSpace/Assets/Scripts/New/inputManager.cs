@@ -142,7 +142,7 @@ public class inputManager : MonoBehaviour {
 		lastAction.extraMovement=Vector2.zero;
 		playerPosition = lastAction.movement;
 
-		lastAction.attack=new Vector2 (.5f, .5f);
+		lastAction.attack = new Vector2 (.5f, .5f);
 		lastAction.weaponId = 0;
 		commands.Push(lastAction);
 

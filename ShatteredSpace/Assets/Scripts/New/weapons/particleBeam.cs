@@ -3,6 +3,6 @@ using System.Collections;
 
 public class particleBeam : weapon { 
 	// Placeholder
-	public particleBeam():base("Particle Beam","Particle Beam",3,10,0,1){
+	public particleBeam():base("Particle Beam","Long range, low damage.",3,10,0,1){
 	}
 }

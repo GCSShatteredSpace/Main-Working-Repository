@@ -9,9 +9,9 @@ public class grenade : weapon {
 	
 	public List<Vector2> bombPos = new List<Vector2> ();
 	public int maxBombs;
-	public int splatter;
+	static private int SPLASHDAMAGE = 2;
 	
-	public grenade():base("grenade","grenade",4,4,-1,1
+	public grenade():base("Grenade","Has splash damage of 2",4,4,-1,1
 	                      // -1 stands for delay until end of turn but actually we'll never use it
 	                      // We can't even say if time==-1 because that's when turn actually end
 	                      // We are looking for a time when players stop moving but turn hasn't really ended
@@ -47,7 +47,7 @@ public class grenade : weapon {
 		// Creating the central damage
 		bManager.bomb (pos,newDamage);
 		// Creating the splatter damage
-		newDamage.damageAmount = splatter;
+		newDamage.damageAmount = SPLASHDAMAGE;
 		for (int i=0; i<6; i++) {
 			newDamage.push=SS.direction[i];
 			bManager.bomb(pos+SS.direction[i],newDamage);	

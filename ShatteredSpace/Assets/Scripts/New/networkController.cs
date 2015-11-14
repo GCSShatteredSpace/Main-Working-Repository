@@ -23,7 +23,7 @@ public class networkController : MonoBehaviour {
 	GameObject thisPlayer;
 
 	Queue<string> messages = new Queue<string>();
-	const int messageCount = 6;
+	const int messageCount = 10;
 	int numPlayers;
 
 	void Start () {
@@ -103,6 +103,7 @@ public class networkController : MonoBehaviour {
 		player p = thisPlayer.GetComponent<player> ();
 		tManager.addPlayer (p);
 		p.addPlayerList (p.GetComponent<PhotonView> (),spawnHex);
+		p.SendNetworkMessage += AddMessage;
 	}
 
 	//Existing players increment numplayers
@@ -120,6 +121,23 @@ public class networkController : MonoBehaviour {
 		if (thisPlayer.GetComponent<player>().getID() == -1) {
 			thisPlayer.GetComponent<player> ().setID (numPlayers);
 		}
+	}
+
+	void AddMessage(string message)
+	{
+		photonView.RPC ("AddMessage_RPC", PhotonTargets.All, message);
+	}
+	
+	[PunRPC]
+	void AddMessage_RPC(string message)
+	{
+		messages.Enqueue (message);
+		if(messages.Count > messageCount)
+			messages.Dequeue();
+		
+		messageWindow.text = "";
+		foreach(string m in messages)
+			messageWindow.text += m + "\n";
 	}
 
 }

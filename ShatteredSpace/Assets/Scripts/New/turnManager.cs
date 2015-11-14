@@ -67,14 +67,14 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void startTurn(){
-		print ("Turn starts!");
+		//print ("Turn starts!");
 		StartCoroutine(clock());
 	}
 	
 	// In-game time!
 	// This is probably the most important piece of code in the whole game
 	IEnumerator clock(){
-		print ("clock active!");
+		//print ("clock active!");
 		while (turnStarted) {
 			// The order is curcial!!
 			yield return new WaitForSeconds (dataBase.stepTime);
@@ -83,11 +83,12 @@ public class turnManager : MonoBehaviour {
 			print ("Official Time = " + time.ToString ());
 		}
 		time = -1;
-		print ("clock off!");
+		//print ("clock off!");
 	}
 	
 	// Where we actually end the turn
 	void endTurn(){
+		//print ("end turn!");
 		foreach (player p in players) {
 			playerTakeTurretDamage (p);
 		}
@@ -99,7 +100,7 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void resetTurn(){
-		print ("Turn reset!");
+		//print ("Turn reset!");
 		endCurrentStep ();
 		readyPlayers = 0;
 		for (int i = 0; i<finishedPlayerArray.Length; i++) {
@@ -116,7 +117,7 @@ public class turnManager : MonoBehaviour {
 	// If both players stopped then it's end of turn stage
 	// Bombs might fall in this stage
 	public void stopMovement(){
-		print (stoppedPlayers.ToString()+ " players stopped!");
+		//print (stoppedPlayers.ToString()+ " players stopped!");
 		stoppedPlayers ++;
 	}
 

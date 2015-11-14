@@ -10,9 +10,10 @@ public class player : MonoBehaviour {
 	[SerializeField]statsManager database;
 
 	PhotonView photonView;
+	public delegate void SendMessage(string MessageOverlay);
+	public event SendMessage SendNetworkMessage;
 	
 	GameObject myPlayer;
-	string playerName;
 	
 	[SerializeField] Vector2 playerPosition;
 	int energy;
@@ -52,6 +53,9 @@ public class player : MonoBehaviour {
 		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 		
 		myPlayer = this.gameObject;
+
+		energy = database.playerStartEnergy;
+
 		time = -1;
 		turn = 0;
 		waitCount = 0;
@@ -78,6 +82,7 @@ public class player : MonoBehaviour {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
 			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
+			playerMenu.setMyPlayer(this);
 		} else {
 			playerIndex = 1;
 		}
@@ -101,8 +106,8 @@ public class player : MonoBehaviour {
 		// End of turn
 		if (time == -1) {
 			turn = tManager.getTurn ();
-			print ("Player end of turn!");
-			print("Turn:" + turn.ToString());
+			//print ("Player end of turn!");
+			//print("Turn:" + turn.ToString());
 		}
 	}
 
@@ -126,6 +131,7 @@ public class player : MonoBehaviour {
 			action currentAction = actions.Pop();
 //			print ("current attack: "+currentAction.attack.ToString());
 			if(currentAction.attack!=new Vector2(0.5f,0.5f)){
+
 				currWeapon.fireWeapon(currentAction.attack,time);
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
@@ -140,7 +146,7 @@ public class player : MonoBehaviour {
 			}
 		} else {
 			// No action left to do!
-			print ("No action left! WaitCount: " + waitCount.ToString());
+			//print ("No action left! WaitCount: " + waitCount.ToString());
 			if (!finishedTurn){
 				tManager.stopMovement();
 			}
@@ -165,14 +171,26 @@ public class player : MonoBehaviour {
 //		print ("Weapon has hit!");
 		waitCount -= 1;
 	}
-
+	
 	public void takeDamage(int amount){
-		energy-=amount;
-		if (energy<=0) die();
+		// This RPC seems redundant, but it handles building weapons
+		photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
+	}
+
+	[PunRPC]
+	void networkTakeDamage(int amount){
+		if (photonView.isMine) {
+			energy -= amount;
+			SendNetworkMessage (PhotonNetwork.player.name + " took " + amount.ToString() + " damage!");
+			SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
+			if (energy<=0) die();
+		}
 	}
 
 	void die(){
-		print("Player " + playerName + " is destroyed!");
+		SendNetworkMessage(PhotonNetwork.player.name + " is destroyed and revived!");
+		energy = database.playerStartEnergy;
+		SendNetworkMessage(PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
 	}
   	
 	// Called by turn manager
@@ -220,13 +238,6 @@ public class player : MonoBehaviour {
 		return currWeapon;
 	}
 
-	// This integer is the index of the button
-	// Which is also the index of the weapon in the list weapons
-	// Because btns and weapons are added at the same time
-	public void setWeapon(int weaponIndexInList){
-		currWeapon = weapons [weaponIndexInList];
-	}
-
 	public Vector2 getPosition(){
 		//print ("player pos" + playerPosition);
 		return playerPosition;
@@ -252,10 +263,35 @@ public class player : MonoBehaviour {
 		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
 	}
 
+	public void setWeapon(int weaponIndex){
+		photonView.RPC ("networkSetWeapon", PhotonTargets.All, weaponIndex);
+	}
+
+	[PunRPC]
+	void networkSetWeapon(int weaponIndex){
+		int i;
+		for (i = 0; i < weaponList.Count; i++){
+			if (weaponList[i] == weaponIndex){
+				// Player doesn't store weapons in the order of weapon index
+				currWeapon = weapons [i];
+				return;
+			}
+		}
+	}
+
 	public void addWeapon(int wpnID){
+		photonView.RPC ("networkAddWeapon", PhotonTargets.All, wpnID);
+	}
+
+	[PunRPC]
+	void networkAddWeapon(int wpnID){
 		weaponList.Add (wpnID);
-		weapons.Add (database.weapons[wpnID]);
-		playerMenu.addWeapon (wpnID);
+		weapon newWpn = Instantiate(database.weapons[wpnID]);
+		newWpn.setMaster (this);
+		weapons.Add (newWpn);
+		if (photonView.isMine) {
+			playerMenu.addWeapon (wpnID);
+		}
 	}
 
 	public bool hasWeapon(int wpnID){
@@ -270,6 +306,7 @@ public class player : MonoBehaviour {
 	void transferID(int i){
 		playerGameID = i;
 	}
+	
 
 	//sets actions and transfers actions to dummy players on other clients
 	public void setActionSequence(Stack<action> commands){
