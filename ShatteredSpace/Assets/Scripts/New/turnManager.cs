@@ -89,6 +89,10 @@ public class turnManager : MonoBehaviour {
 	// Where we actually end the turn
 	void endTurn(){
 		//print ("end turn!");
+		foreach (player p in players) {
+			playerTakeTurretDamage (p);
+		}
+		print ("end turn!");
 		// Note the difference between start and stop coroutine!!
 		StopCoroutine ("clock");
 		// Clear
@@ -142,7 +146,7 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
-		if (players.Count==maxPlayers){
+		if (players.Count == maxPlayers){
 			bManager.setPlayers(players);
 		}
 	}
