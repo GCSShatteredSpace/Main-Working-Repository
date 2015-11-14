@@ -4,7 +4,8 @@ using System.Collections;
 
 
 public class AnimationController : MonoBehaviour {
-    public Transform particleEffect;
+    [SerializeField] Transform particleEffect;
+    [SerializeField] functionManager SS;
     // Use this for initialization
     void Start () {
 	
@@ -18,6 +19,6 @@ public class AnimationController : MonoBehaviour {
 
     public void explode(Vector2 pos, Quaternion rot)
     {
-        GameObject a=GameObject.Instantiate(particleEffect.gameObject, pos, rot) as GameObject;
+        GameObject a=GameObject.Instantiate(particleEffect.gameObject, SS.hexPositionTransform(pos), rot) as GameObject;
     }
 }
