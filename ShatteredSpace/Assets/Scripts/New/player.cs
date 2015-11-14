@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI; 
 
 public class player : MonoBehaviour {
 	
@@ -79,8 +80,12 @@ public class player : MonoBehaviour {
 			playerMenu.setMyPlayer(this);
 			addWeapon (0);
 			setWeapon (0);
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString ();
 		} else {
 			playerIndex = 1;
+			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString();
 		}
 	}
 
@@ -104,6 +109,14 @@ public class player : MonoBehaviour {
 			turn = tManager.getTurn ();
 			//print ("Player end of turn!");
 			//print("Turn:" + turn.ToString());
+		}
+		if (this.playerIndex == 0) {
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString (); 
+		}
+		else {
+			GameObject.Find ("player2Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString ();
 		}
 	}
 
