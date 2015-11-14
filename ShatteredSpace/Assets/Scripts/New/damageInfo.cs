@@ -13,5 +13,4 @@ public class damageInfo : MonoBehaviour {
             p.addMomentum(push);
         }
 	}
-
 }

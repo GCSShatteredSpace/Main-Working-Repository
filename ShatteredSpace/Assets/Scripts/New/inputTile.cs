@@ -143,7 +143,8 @@ public class inputTile : MonoBehaviour {
 
 		// If the player chose to stay here, s/he is in trouble
 		if (current && bManager.isDangerous (tilePosition)) {
-			dangerous = true;
+			// Let's unenable it for now because it gets in the way of our awesome menu
+			//dangerous = true;
 		} else {
 			dangerous = false;
 		}
@@ -217,8 +218,8 @@ public class inputTile : MonoBehaviour {
 			Rect bounds = new Rect (Screen.width/2 + center.x*warningRatio - warningSize / 2, 
 			                        Screen.height/2 - center.y*warningRatio - warningSize / 2 - vertOffset,
 			                        warningSize, warningSize);
-
-			GUI.DrawTexture (bounds, warning);
+			//I get lots of errors if I leave this uncommented. Apparently warning is set to null
+			//GUI.DrawTexture (bounds, warning);
 		}
 	}
 

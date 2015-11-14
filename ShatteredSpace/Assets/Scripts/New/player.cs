@@ -7,12 +7,13 @@ public class player : MonoBehaviour {
 	[SerializeField]inputManager iManager;
 	[SerializeField]turnManager tManager;
 	[SerializeField]functionManager SS;
-	[SerializeField]statsManager dataBase;
+	[SerializeField]statsManager database;
 
 	PhotonView photonView;
+	public delegate void SendMessage(string MessageOverlay);
+	public event SendMessage SendNetworkMessage;
 	
 	GameObject myPlayer;
-	string playerName;
 	
 	[SerializeField] Vector2 playerPosition;
 	int energy;
@@ -29,7 +30,12 @@ public class player : MonoBehaviour {
 	bool finishedTurn;
 	int waitCount;	// Keeps track of the num of weapons that are not done
 	// Temporary
+
 	weapon currWeapon;
+
+	List<weapon> weapons = new List<weapon> ();
+	List<int> weaponList = new List<int>();
+	playerWpnMenu playerMenu;
 
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
 
@@ -44,27 +50,39 @@ public class player : MonoBehaviour {
 		iManager = gameController.GetComponent<inputManager> ();
 		tManager = gameController.GetComponent<turnManager> ();
 		SS = gameController.GetComponent<functionManager> ();
-		dataBase = GameObject.Find ("stats").GetComponent<statsManager> ();
+		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 		
 		myPlayer = this.gameObject;
+
+		energy = database.playerStartEnergy;
+
 		time = -1;
 		turn = 0;
 		waitCount = 0;
 		// This is not a permanent solution
 		// But it sure ensure that all movements (espeacially ones involving collisions)
 		// are done in a stepTime
-		speed = 3 / dataBase.stepTime;
+		speed = 3 / database.stepTime;
 		// Temp
-		// You have to add it as a component for the Update and Start methods to run
-		// Pretty disturbing if you think about it
-		currWeapon = this.gameObject.AddComponent<sniperCannon> ();
-		currWeapon.setMaster(this);
+
 		photonView = PhotonView.Get (this);
+
+		// You have to add it as a component for the Update and Start methods to run
+		// Pretty disturbing if you think about it...
+		// All players start with blaster
+		currWeapon = database.weapons[0];
+		currWeapon.setMaster(this);
+		//print ("typeof:" + currWeapon.GetType().ToString ());
+		weaponList.Add (0);
+		weapons.Add (currWeapon);
+		print(weapons[0].ToString());
 
 		//distinguishes which player is to be controlled
 		if (photonView.isMine) {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
+			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
+			playerMenu.setMyPlayer(this);
 		} else {
 			playerIndex = 1;
 		}
@@ -88,8 +106,8 @@ public class player : MonoBehaviour {
 		// End of turn
 		if (time == -1) {
 			turn = tManager.getTurn ();
-			print ("Player end of turn!");
-			print("Turn:" + turn.ToString());
+			//print ("Player end of turn!");
+			//print("Turn:" + turn.ToString());
 		}
 	}
 
@@ -108,29 +126,35 @@ public class player : MonoBehaviour {
 
 	void startStep (){
 		//print ("Prepare to move!");
-		if (actions.Count > 0 && !finishedTurn) {
+		action[] a = actions.ToArray ();
+		if (actions.Count > 0) {
 			action currentAction = actions.Pop();
 //			print ("current attack: "+currentAction.attack.ToString());
 			if(currentAction.attack!=new Vector2(0.5f,0.5f)){
+
 				currWeapon.fireWeapon(currentAction.attack,time);
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
 			}
 			if (actions.Count > 0){
+		//		print (this.playerIndex + " " + actions.Peek().movement.ToString());
 				Vector2 velocity = actions.Peek().movement-currentAction.movement;
-				// Attention! Action contain position while we need velocity!
+				// Action contain position while we need velocity!
 				tManager.attemptToMove (velocity,currentAction.extraMovement,playerIndex);
+			} else {
+				tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
 			}
 		} else {
 			// No action left to do!
-			actions.Clear();
-			print ("No action left! WaitCount: " + waitCount.ToString());
-			if (!finishedTurn) tManager.stopMovement();
+			//print ("No action left! WaitCount: " + waitCount.ToString());
+			if (!finishedTurn){
+				tManager.stopMovement();
+			}
 			finishedTurn=true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
 			tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
-			if (waitCount == 0 && momentum==Vector2.zero){
+			if (waitCount == 0 && momentum == Vector2.zero){
 				tManager.finishAction(playerIndex);
 			}
 			momentum = Vector2.zero;
@@ -147,14 +171,26 @@ public class player : MonoBehaviour {
 //		print ("Weapon has hit!");
 		waitCount -= 1;
 	}
-
+	
 	public void takeDamage(int amount){
-		energy-=amount;
-		if (energy<=0) die();
+		// This RPC seems redundant, but it handles building weapons
+		photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
+	}
+
+	[PunRPC]
+	void networkTakeDamage(int amount){
+		if (photonView.isMine) {
+			energy -= amount;
+			SendNetworkMessage (PhotonNetwork.player.name + " took " + amount.ToString() + " damage!");
+			SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
+			if (energy<=0) die();
+		}
 	}
 
 	void die(){
-		print("Player" + playerName + "is destroyed!");
+		SendNetworkMessage(PhotonNetwork.player.name + " is destroyed and revived!");
+		energy = database.playerStartEnergy;
+		SendNetworkMessage(PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
 	}
   	
 	// Called by turn manager
@@ -227,10 +263,50 @@ public class player : MonoBehaviour {
 		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
 	}
 
+	public void setWeapon(int weaponIndex){
+		photonView.RPC ("networkSetWeapon", PhotonTargets.All, weaponIndex);
+	}
+
+	[PunRPC]
+	void networkSetWeapon(int weaponIndex){
+		int i;
+		for (i = 0; i < weaponList.Count; i++){
+			if (weaponList[i] == weaponIndex){
+				// Player doesn't store weapons in the order of weapon index
+				currWeapon = weapons [i];
+				return;
+			}
+		}
+	}
+
+	public void addWeapon(int wpnID){
+		photonView.RPC ("networkAddWeapon", PhotonTargets.All, wpnID);
+	}
+
+	[PunRPC]
+	void networkAddWeapon(int wpnID){
+		weaponList.Add (wpnID);
+		weapon newWpn = Instantiate(database.weapons[wpnID]);
+		newWpn.setMaster (this);
+		weapons.Add (newWpn);
+		if (photonView.isMine) {
+			playerMenu.addWeapon (wpnID);
+		}
+	}
+
+	public bool hasWeapon(int wpnID){
+		if (weaponList.Contains (wpnID)) {
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	[PunRPC]
 	void transferID(int i){
 		playerGameID = i;
 	}
+	
 
 	//sets actions and transfers actions to dummy players on other clients
 	public void setActionSequence(Stack<action> commands){

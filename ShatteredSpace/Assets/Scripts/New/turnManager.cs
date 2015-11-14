@@ -14,7 +14,7 @@ public class turnManager : MonoBehaviour {
 	IEnumerator clockCoroutine;
 	
 	int readyPlayers = 0;		// If it equals to num of players start turn
-	[SerializeField]int finishedPlayers;	// If it equals to num of players end turn
+	bool[] finishedPlayerArray = new bool[2]; //Holds which players are finished
 	[SerializeField]int time;
 	int turn;
 	bool turnStarted;
@@ -54,9 +54,9 @@ public class turnManager : MonoBehaviour {
 	
 	// Where we wait for players to get ready 
 	public void getReady(){ 
-		readyPlayers+=1;
+		readyPlayers += 1;
 		if ((readyPlayers == PhotonNetwork.playerList.Length) && !turnStarted) {
-			turn+=1;
+			turn += 1;
 			turnStarted=true;
 			startTurn();
 		}
@@ -67,14 +67,14 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void startTurn(){
-		print ("Turn starts!");
+		//print ("Turn starts!");
 		StartCoroutine(clock());
 	}
 	
 	// In-game time!
 	// This is probably the most important piece of code in the whole game
 	IEnumerator clock(){
-		print ("clock active!");
+		//print ("clock active!");
 		while (turnStarted) {
 			// The order is curcial!!
 			yield return new WaitForSeconds (dataBase.stepTime);
@@ -83,11 +83,15 @@ public class turnManager : MonoBehaviour {
 			print ("Official Time = " + time.ToString ());
 		}
 		time = -1;
-		print ("clock off!");
+		//print ("clock off!");
 	}
 	
 	// Where we actually end the turn
 	void endTurn(){
+		//print ("end turn!");
+		foreach (player p in players) {
+			playerTakeTurretDamage (p);
+		}
 		print ("end turn!");
 		// Note the difference between start and stop coroutine!!
 		StopCoroutine ("clock");
@@ -96,10 +100,12 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void resetTurn(){
-		print ("Turn reset!");
+		//print ("Turn reset!");
 		endCurrentStep ();
 		readyPlayers = 0;
-		finishedPlayers = 0;
+		for (int i = 0; i<finishedPlayerArray.Length; i++) {
+			finishedPlayerArray[i] = false;
+		}
 		turnStarted = false;
 		stoppedPlayers = 0;
 		iManager.startNewTurn (players [0].getPosition ());
@@ -111,16 +117,25 @@ public class turnManager : MonoBehaviour {
 	// If both players stopped then it's end of turn stage
 	// Bombs might fall in this stage
 	public void stopMovement(){
-		print (stoppedPlayers.ToString()+" players stopped!");
+		//print (stoppedPlayers.ToString()+ " players stopped!");
 		stoppedPlayers ++;
 	}
 
 	// Where players declare that they are done with everything!
 	public void finishAction (int playerId){
-		finishedPlayers++;
-		if (finishedPlayers == PhotonNetwork.playerList.Length) endTurn();
+		finishedPlayerArray [playerId] = true;
+		if (getFinishedPlayers() == PhotonNetwork.playerList.Length) endTurn();
 	}
-	
+
+	public int getFinishedPlayers(){
+		int num = 0;
+		for (int i = 0; i<finishedPlayerArray.Length; i++) {
+			if (finishedPlayerArray [i]) {
+				num++;
+			}
+		}
+		return num;
+	}
 	public int getTime(){
 		return time;
 	}
@@ -131,7 +146,7 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
-		if (players.Count==maxPlayers){
+		if (players.Count == maxPlayers){
 			bManager.setPlayers(players);
 		}
 	}
@@ -208,8 +223,10 @@ public class turnManager : MonoBehaviour {
 			result [0] = new List<Vector2>();
 			result [1] = new List<Vector2>();
 			// The 1/4 is just a magical number for the thing to look a little more realistic
-			result [0].Add (v [0]/4);result [0].Add (-v [0]/4);
-			result [1].Add (v [1]/4);result [1].Add (v [1]/4);
+			result [0].Add (v [0]/4);
+			result [0].Add (-v [0]/4);
+			result [1].Add (v [1]/4);
+			result [1].Add (-v [1]/4);
 			return result;
 		} else {
 			print ("Player collision!");
@@ -253,7 +270,8 @@ public class turnManager : MonoBehaviour {
 		List<Vector2>[] nextResult = new List<Vector2>[2];
 		Vector2[] newV = new Vector2[2];
 		Vector2[] nextEndPos = new Vector2[2];
-		newV [1] = v [0];newV [0] = v [1];
+		newV [1] = v [0];
+		newV [0] = v [1];
 		for (int i=0; i<2; i++) {
 			result[i] = new List<Vector2>();
 			// Going half the distance before collision
@@ -263,8 +281,10 @@ public class turnManager : MonoBehaviour {
 		}
 		nextResult = calculateCollision(nextEndPos,newV);
 		// Correct the first element
-		result [0].Add (v [0] / 2 + nextResult [0] [0]);result [1].Add (v [1] / 2 + nextResult [1] [0]);
-		nextResult [0].RemoveAt (0);nextResult [1].RemoveAt (0);
+		result [0].Add (v [0] / 2 + nextResult [0] [0]);
+		result [1].Add (v [1] / 2 + nextResult [1] [0]);
+		nextResult [0].RemoveAt (0);
+		nextResult [1].RemoveAt (0);
 		// Merge the lists
 		result = appendLists (result, nextResult);
 		return result;
@@ -282,7 +302,10 @@ public class turnManager : MonoBehaviour {
 	}
 
 	
-
+    public void playerTakeTurretDamage(player p){
+		Vector2 pos = p.getPosition ();
+		bManager.doTurretDamage(pos);
+	}
 	void endCurrentStep (){
 		for (int i=0; i<2; i++) {
 			readyForStep [i] = false;

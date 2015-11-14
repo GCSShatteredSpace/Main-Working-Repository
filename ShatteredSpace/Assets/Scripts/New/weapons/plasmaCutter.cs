@@ -18,7 +18,7 @@ public class plasmaCutter : weapon
 
     // A passive weapon
     public plasmaCutter()
-        : base("plasmaCutter", "plasmaCutter", 6, 0, 0, 0)
+        : base("Plasma Cutter", "Passive weapon, deals damage to enemies in range 1; Overheats when hit", 6, 0, 0, 0)
     {
     }
 
