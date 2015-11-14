@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class turret : MonoBehaviour {
 
-	public static int TURRET_DAMAGE = 5;
+	public static int TURRET_DAMAGE = 0;
 
 	statsManager dataBase;
 	boardManager bManager;
