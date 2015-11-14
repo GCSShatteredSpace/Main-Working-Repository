@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI; 
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,6 +9,7 @@ public class player : MonoBehaviour {
 	[SerializeField]turnManager tManager;
 	[SerializeField]functionManager SS;
 	[SerializeField]statsManager database;
+
 
 	PhotonView photonView;
 	
@@ -78,8 +80,13 @@ public class player : MonoBehaviour {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
 			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+																			this.energy.ToString ();
+
 		} else {
 			playerIndex = 1;
+			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.player.name + ": " + 
+																			this.energy.ToString();
 		}
 	}
 
@@ -104,6 +111,15 @@ public class player : MonoBehaviour {
 			print ("Player end of turn!");
 			print("Turn:" + turn.ToString());
 		}
+		if (this.playerIndex == 0) {
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+																			this.energy.ToString (); 
+		}
+		else {
+			GameObject.Find ("player2Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+																		this.energy.ToString ();
+		}
+		
 	}
 
 	public void addPlayerList(PhotonView v, Vector2 startPos){
