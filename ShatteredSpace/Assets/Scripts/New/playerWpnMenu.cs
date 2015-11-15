@@ -21,7 +21,6 @@ public class playerWpnMenu : MonoBehaviour {
 	void Start () {
 		weaponIDs.Add (0);
 		buttons.Add(this.gameObject.GetComponentInChildren<playerWeaponBtn>());
-	
 		buttons [0].setChosen (true);
 		buttonObject = buttons [0].gameObject;
 	}

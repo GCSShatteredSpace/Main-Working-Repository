@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI; 
 
 public class player : MonoBehaviour {
 	
@@ -70,21 +71,21 @@ public class player : MonoBehaviour {
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it...
 		// All players start with blaster
-		currWeapon = database.weapons[0];
-		currWeapon.setMaster(this);
 		//print ("typeof:" + currWeapon.GetType().ToString ());
-		weaponList.Add (0);
-		weapons.Add (currWeapon);
-		print(weapons[0].ToString());
-
 		//distinguishes which player is to be controlled
 		if (photonView.isMine) {
 			iManager.setMyPlayer (this);
 			playerIndex = 0;
 			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
 			playerMenu.setMyPlayer(this);
+			addWeapon (0);
+			setWeapon (0);
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString ();
 		} else {
 			playerIndex = 1;
+			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString();
 		}
 	}
 
@@ -109,6 +110,14 @@ public class player : MonoBehaviour {
 			//print ("Player end of turn!");
 			//print("Turn:" + turn.ToString());
 		}
+		if (this.playerIndex == 0) {
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString (); 
+		}
+		else {
+			GameObject.Find ("player2Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString ();
+		}
 	}
 
 	public void addPlayerList(PhotonView v, Vector2 startPos){
@@ -126,12 +135,10 @@ public class player : MonoBehaviour {
 
 	void startStep (){
 		//print ("Prepare to move!");
-		action[] a = actions.ToArray ();
-		if (actions.Count > 0) {
+		if (actions.Count > 0 && !finishedTurn) {
 			action currentAction = actions.Pop();
 //			print ("current attack: "+currentAction.attack.ToString());
 			if(currentAction.attack!=new Vector2(0.5f,0.5f)){
-
 				currWeapon.fireWeapon(currentAction.attack,time);
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
@@ -174,17 +181,17 @@ public class player : MonoBehaviour {
 	
 	public void takeDamage(int amount){
 		// This RPC seems redundant, but it handles building weapons
-		photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
+		if (photonView.isMine) {
+			photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
+		}
 	}
 
 	[PunRPC]
 	void networkTakeDamage(int amount){
-		if (photonView.isMine) {
-			energy -= amount;
-			SendNetworkMessage (PhotonNetwork.player.name + " took " + amount.ToString() + " damage!");
-			SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
-			if (energy<=0) die();
-		}
+		energy -= amount;
+		SendNetworkMessage (PhotonNetwork.player.name + " took " + amount.ToString() + " damage!");
+		SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
+		if (energy <= 0) die();
 	}
 
 	void die(){
@@ -263,8 +270,12 @@ public class player : MonoBehaviour {
 		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
 	}
 
+	public int getPlayerIndex(){
+		return playerIndex;
+	}
+
 	public void setWeapon(int weaponIndex){
-		photonView.RPC ("networkSetWeapon", PhotonTargets.All, weaponIndex);
+		photonView.RPC ("networkSetWeapon", PhotonTargets.AllBuffered, weaponIndex);
 	}
 
 	[PunRPC]
@@ -280,7 +291,7 @@ public class player : MonoBehaviour {
 	}
 
 	public void addWeapon(int wpnID){
-		photonView.RPC ("networkAddWeapon", PhotonTargets.All, wpnID);
+		photonView.RPC ("networkAddWeapon", PhotonTargets.AllBuffered, wpnID);
 	}
 
 	[PunRPC]
@@ -289,7 +300,8 @@ public class player : MonoBehaviour {
 		weapon newWpn = Instantiate(database.weapons[wpnID]);
 		newWpn.setMaster (this);
 		weapons.Add (newWpn);
-		if (photonView.isMine) {
+		//Assuming player is not allowed to buy additional blasters(wpnID = 0)
+		if (photonView.isMine && wpnID != 0) {
 			playerMenu.addWeapon (wpnID);
 		}
 	}
