@@ -298,7 +298,10 @@ public class player : MonoBehaviour {
 	[PunRPC]
 	void networkAddWeapon(int wpnID){
 		weaponList.Add (wpnID);
+
+		// Can you believe that this actually generates a clone of stats? lol
 		weapon newWpn = Instantiate(database.weapons[wpnID]);
+
 		newWpn.setMaster (this);
 		weapons.Add (newWpn);
 		//Assuming player is not allowed to buy additional blasters(wpnID = 0)
