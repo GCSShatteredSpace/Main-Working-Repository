@@ -58,8 +58,16 @@ public class boardManager : MonoBehaviour {
             {
                 turretSpawnTimers[i]++;
             }
-
+            List<int> temp = vecToBoard(turretSpawnPoint[i]);
+            tile myTile = board[temp[0], temp[1]];
+            if (myTile.hasPlayer() && myTile.hasEnergy()) {
+                players[myTile.getPlayer()- 1].takeDamage(-1 * dataBase.turretStartEnergy);
+                myTile.setEnergy(false);
+                GameObject.Destroy(myTile.getEnergy());
+            }
         }
+       
+            
         // Start of turn
         // End of turn
         if (time == -1)
@@ -141,10 +149,13 @@ public class boardManager : MonoBehaviour {
 
 	public void destroyTurret(Vector2 pos){
 		List<int> temp = vecToBoard (pos);
-		board [temp [0], temp [1]].activateTurret (false);
-        board[temp[0], temp[1]].setEnergy(true);
+        tile myTile = board[temp[0], temp[1]];
+        myTile.activateTurret (false);
+        myTile.setEnergy(true);
         Vector3 spawnPosition = SS.hexPositionTransform(pos);
         GameObject instance = Instantiate(energy, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
+        myTile.setEnergy(true);
+        myTile.setEnergy(instance);
         int spawnIndex=0;
         while (turretSpawnPoint[spawnIndex] != pos) spawnIndex++;
         turretSpawnTimers[spawnIndex] = 1;
@@ -167,7 +178,6 @@ public class boardManager : MonoBehaviour {
      * Returns whether the projectile is blocked by barriers
      */
     public bool isBlocked(Vector2 firePosition, Vector2 targetPosition){
-        int count=0;
         Vector3 firePos = SS.hexPositionTransform(firePosition);
         Vector3 targetPos = SS.hexPositionTransform(targetPosition);
         Vector3 barrierPos;

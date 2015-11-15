@@ -14,8 +14,9 @@ public class tile : MonoBehaviour {
 	List<damageInfo> damageInfos = new List<damageInfo>();
 	int playerId;
 	turret myTurret;
+    GameObject myEnergy;
 
-	public bool hasPlayer(){
+    public bool hasPlayer(){
 		return isPlayer;
 	}
 
@@ -75,8 +76,18 @@ public class tile : MonoBehaviour {
 		return myTurret;
 	}
 
-	// Once it's set to be a blast sheld, it cannot be changed
-	public void setBlastShield(){
+    public void setEnergy(GameObject e)
+    {
+        myEnergy = e;
+    }
+
+    public GameObject getEnergy()
+    {
+        return myEnergy;
+    }
+
+    // Once it's set to be a blast sheld, it cannot be changed
+    public void setBlastShield(){
 		isWall = true;
 	}
 	
