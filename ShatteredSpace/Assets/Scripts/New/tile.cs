@@ -5,7 +5,8 @@ using System.Collections.Generic;
 public class tile : MonoBehaviour {
 
 	bool isPlayer;
-	bool isDamage;
+    bool isEnergy;
+    bool isDamage;
 	bool isTurret;
 	bool isWall;
 	bool wallUp;
@@ -18,7 +19,12 @@ public class tile : MonoBehaviour {
 		return isPlayer;
 	}
 
-	public bool hasDamage(){
+    public bool hasEnergy()
+    {
+        return isEnergy;
+    }
+
+    public bool hasDamage(){
 		return isDamage;
 	}
 
@@ -77,8 +83,13 @@ public class tile : MonoBehaviour {
 	public void activateTurret(bool isTrue){
 		turretUp = isTrue;
 	}
-	
-	public void activateWall(bool isTrue){
+
+    public void setEnergy(bool isTrue)
+    {
+        isEnergy = isTrue;
+    }
+
+    public void activateWall(bool isTrue){
 		wallUp = isTrue;
 	}
 	

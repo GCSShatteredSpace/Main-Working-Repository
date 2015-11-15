@@ -13,29 +13,61 @@ public class boardManager : MonoBehaviour {
     const float ratio = 0.8666f; // Sqrt(3)/2
     const float epsilon = 0.01f; // Good enough for our purposes
 	float tileSize;
+    int tn;
+    int time;
 
 
     [SerializeField] statsManager dataBase;
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
     [SerializeField] AnimationController anim;
+    [SerializeField] turnManager  turn;
     [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
+    [SerializeField] int[] turretSpawnTimers = new int[5];
     [SerializeField] Vector2[] barrierSpawnPoint = new Vector2[12]; // Barrier numbers may vary
 
 	[SerializeField] GameObject gameTile;
 	[SerializeField] GameObject turretGameObj;
 	[SerializeField] GameObject blastShieldGameObj;
+    [SerializeField] GameObject energy;
 
-	tile[,] board;
+    tile[,] board;
 
     List<player> players = new List<player>();
 	List<turret> turrets = new List<turret>();
 
     void Start(){
         tileSize = dataBase.tileSize;
-		generateHexMap (dataBase.mapSize);
-		generateMapObjects ();
+		generateHexMap(dataBase.mapSize);
+		generateMapObjects();
     }
-	
+
+    void Update()
+    {
+        if (turn.getTurn() == tn) return;
+        if (turn.getTime() == time) return;
+        // If we don't syncronize time first, weapons will be fired one step early
+        time = turn.getTime();
+        for (int i = 0; i < turretSpawnPoint.Length-1; i++)
+        {
+            if (turretSpawnTimers[i] >= dataBase.turretRespawnTime)
+            {
+                spawnTurret(turretSpawnPoint[i]);
+                turretSpawnTimers[i] = 0;
+            }
+            else if (turretSpawnTimers[i] >= 1)
+            {
+                turretSpawnTimers[i]++;
+            }
+
+        }
+        // Start of turn
+        // End of turn
+        if (time == -1)
+        {
+            tn = turn.getTurn();
+        }
+    }
+
 	// Always use this function when dealing with in-game vectors!
 	List<int> vecToBoard(Vector2 v){
 		int x = Mathf.RoundToInt(v.x);
@@ -72,19 +104,24 @@ public class boardManager : MonoBehaviour {
 		}
 	}
 
+    void spawnTurret(Vector2 pos)
+    {
+        Vector3 spawnPosition = SS.hexPositionTransform(pos);
+        List<int> temp = vecToBoard(pos);
+        int x = temp[0], y = temp[1];
+        board[x, y].activateTurret(true);
+        GameObject instance = Instantiate(turretGameObj, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
+        turret currTurret = instance.GetComponent<turret>();
+        board[x, y].setTurret(currTurret);
+        turrets.Add(currTurret);
+        currTurret.setPos(pos);
+    }
+
 	void generateMapObjects(){
 		// Spawn turrets
 		foreach (Vector2 pos in turretSpawnPoint) {
-			Vector3 spawnPosition = SS.hexPositionTransform(pos);
-			List<int> temp = vecToBoard(pos);
-			int x = temp[0],y = temp[1];
-			board[x,y].activateTurret(true);
-			GameObject instance = Instantiate(turretGameObj,spawnPosition,Quaternion.LookRotation(Vector3.up)) as GameObject;
-			turret currTurret = instance.GetComponent<turret>();
-			board[x,y].setTurret(currTurret);
-			turrets.Add(currTurret);
-			currTurret.setPos(pos);
-		}
+            spawnTurret(pos);
+        }
 		// Spawn balst shields
 		foreach (Vector2 pos in barrierSpawnPoint) {
 			Vector3 spawnPosition = SS.hexPositionTransform(pos);
@@ -105,7 +142,13 @@ public class boardManager : MonoBehaviour {
 	public void destroyTurret(Vector2 pos){
 		List<int> temp = vecToBoard (pos);
 		board [temp [0], temp [1]].activateTurret (false);
-	}
+        board[temp[0], temp[1]].setEnergy(true);
+        Vector3 spawnPosition = SS.hexPositionTransform(pos);
+        GameObject instance = Instantiate(energy, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
+        int spawnIndex=0;
+        while (turretSpawnPoint[spawnIndex] != pos) spawnIndex++;
+        turretSpawnTimers[spawnIndex] = 1;
+    }
 	
     public Vector3 ProjectPointLine(Vector3 point, Vector3 lineStart, Vector3 lineEnd){
         Vector3 rhs = point - lineStart;
