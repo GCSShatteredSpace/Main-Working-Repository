@@ -60,10 +60,16 @@ public class boardManager : MonoBehaviour {
             }
             List<int> temp = vecToBoard(turretSpawnPoint[i]);
             tile myTile = board[temp[0], temp[1]];
-            if (myTile.hasPlayer() && myTile.hasEnergy()) {
-                players[myTile.getPlayer()- 1].takeDamage(-1 * dataBase.turretStartEnergy);
-                myTile.setEnergy(false);
-                GameObject.Destroy(myTile.getEnergy());
+            if (myTile.hasEnergy()) {
+				foreach(player p in players){
+					if (p.getPosition()==turretSpawnPoint[i]){
+						// player got the energy
+						p.takeDamage(-1 * dataBase.turretStartEnergy);
+						myTile.setEnergy(false);
+						GameObject.Destroy(myTile.getEnergy());
+						break;
+					}
+				}
             }
         }
        
@@ -140,13 +146,6 @@ public class boardManager : MonoBehaviour {
 		}
 	}
 
-	// This wipes all the damage on the board for the next step
-	public void cleanBoard(){
-		foreach (tile t in board) {
-			t.clearDamage();
-		}
-	}
-
 	public void destroyTurret(Vector2 pos){
 		List<int> temp = vecToBoard (pos);
         tile myTile = board[temp[0], temp[1]];
@@ -154,8 +153,8 @@ public class boardManager : MonoBehaviour {
         myTile.setEnergy(true);
         Vector3 spawnPosition = SS.hexPositionTransform(pos);
         GameObject instance = Instantiate(energy, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
-        myTile.setEnergy(true);
-        myTile.setEnergy(instance);
+        myTile.setEnergy(true);		// wow
+        myTile.setEnergy(instance);	// so rigor
         int spawnIndex=0;
         while (turretSpawnPoint[spawnIndex] != pos) spawnIndex++;
         turretSpawnTimers[spawnIndex] = 1;
@@ -289,6 +288,13 @@ public class boardManager : MonoBehaviour {
 		board [pos[0], pos[1]].addDamage (damage);
         anim.explode( position, Quaternion.identity);
 		return hit;
+	}
+
+	// This wipes all the damage on the board for the next step
+	public void cleanBoard(){
+		foreach (tile t in board) {
+			t.clearDamage();
+		}
 	}
 
 	/*
