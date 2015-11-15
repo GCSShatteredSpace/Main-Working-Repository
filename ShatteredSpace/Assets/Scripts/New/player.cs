@@ -157,7 +157,8 @@ public class player : MonoBehaviour {
 			if (!finishedTurn){
 				tManager.stopMovement();
 			}
-			finishedTurn=true;
+
+			finishedTurn = true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
 			tManager.attemptToMove (momentum,Vector2.zero,playerIndex);

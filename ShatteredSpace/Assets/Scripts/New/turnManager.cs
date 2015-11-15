@@ -67,7 +67,7 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void startTurn(){
-		//print ("Turn starts!");
+		print ("Turn starts!");
 		StartCoroutine(clock());
 	}
 	
@@ -108,9 +108,10 @@ public class turnManager : MonoBehaviour {
 		}
 		turnStarted = false;
 		stoppedPlayers = 0;
-		iManager.startNewTurn (players [0].getPosition ());
 		players [0].resetTurn ();
 		time = -1;
+
+		iManager.startNewTurn (players [0].getPosition ());
 	}
 
 	// Where players declare that they are done with moving!
@@ -124,7 +125,7 @@ public class turnManager : MonoBehaviour {
 	// Where players declare that they are done with everything!
 	public void finishAction (int playerId){
 		finishedPlayerArray [playerId] = true;
-		if (getFinishedPlayers() == PhotonNetwork.playerList.Length) endTurn();
+		if (getFinishedPlayers() == PhotonNetwork.playerList.Length && turnStarted) endTurn();
 	}
 
 	public int getFinishedPlayers(){
@@ -307,6 +308,7 @@ public class turnManager : MonoBehaviour {
 		Vector2 pos = p.getPosition ();
 		bManager.doTurretDamage(pos);
 	}
+
 	void endCurrentStep (){
 		for (int i=0; i<2; i++) {
 			readyForStep [i] = false;
