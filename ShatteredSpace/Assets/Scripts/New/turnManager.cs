@@ -146,9 +146,10 @@ public class turnManager : MonoBehaviour {
 	
 	public void addPlayer(player p){
 		players.Add (p);
-		if (players.Count == maxPlayers){
+		//if (players.Count == maxPlayers){
+		// We don't need the maximum amount of players for testing purposes
 			bManager.setPlayers(players);
-		}
+		//}
 	}
 	
 	// The player tells turnManager the next move

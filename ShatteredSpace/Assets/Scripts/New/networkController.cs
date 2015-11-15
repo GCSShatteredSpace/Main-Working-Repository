@@ -103,7 +103,7 @@ public class networkController : MonoBehaviour {
 		player p = thisPlayer.GetComponent<player> ();
 		tManager.addPlayer (p);
 		p.addPlayerList (p.GetComponent<PhotonView> (),spawnHex);
-		//p.SendNetworkMessage += AddMessage;
+		p.SendNetworkMessage += AddMessage;
 	}
 
 	//Existing players increment numplayers
