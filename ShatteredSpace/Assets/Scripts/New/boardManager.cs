@@ -43,45 +43,39 @@ public class boardManager : MonoBehaviour {
 
     void Update()
     {
-        if (turn.getTurn() == tn) return;
         if (turn.getTime() == time) return;
-        // If we don't syncronize time first, weapons will be fired one step early
-        time = turn.getTime();
+		// Time/step based events
+		time = turn.getTime();
         for (int i = 0; i < turretSpawnPoint.Length-1; i++)
-        {
-            if (turretSpawnTimers[i] >= dataBase.turretRespawnTime)
-            {
-                spawnTurret(turretSpawnPoint[i]);
-                turretSpawnTimers[i] = 0;
-            }
-            else if (turretSpawnTimers[i] >= 1)
-            {
-                turretSpawnTimers[i]++;
-            }
+		{
             List<int> temp = vecToBoard(turretSpawnPoint[i]);
             tile myTile = board[temp[0], temp[1]];
-            if (myTile.hasEnergy()) {
-				foreach(player p in players){
-					if (p.getPosition()==turretSpawnPoint[i]){
-						// player got the energy
-						p.takeDamage(-1 * dataBase.turretStartEnergy);
-						myTile.setEnergy(false);
-						GameObject.Destroy(myTile.getEnergy());
-						break;
-					}
-				}
-            }
-        }
-       
-            
-        // Start of turn
-        // End of turn
-        if (time == -1)
-        {
-            tn = turn.getTurn();
-        }
-    }
-
+			if (myTile.hasEnergy() && occupiedByPlayer(turretSpawnPoint[i])) {
+				getPlayer(turretSpawnPoint[i]).takeDamage(-1 * dataBase.turretStartEnergy);
+				myTile.setEnergy(false);
+				GameObject.Destroy(myTile.getEnergy());
+			}
+		}
+		// Turn-based events
+		if (turn.getTurn() == tn) return;
+		for (int i = 0; i < turretSpawnPoint.Length-1; i++)
+		{
+			// Spawning a turret while a player's on the spot would cause infinite recursion
+			// And that crashes the game, as you might have expected
+			if (turretSpawnTimers[i] >= dataBase.turretRespawnTime && !occupiedByPlayer(turretSpawnPoint[i]))
+			{
+				spawnTurret(turretSpawnPoint[i]);
+				turretSpawnTimers[i] = 0;
+			}
+			else if (turretSpawnTimers[i] >= 1)
+			{
+				turretSpawnTimers[i]++;
+			}
+		}
+		// This makes sure that the event only happens once per turn
+		tn = turn.getTurn();
+	}
+	
 	// Always use this function when dealing with in-game vectors!
 	List<int> vecToBoard(Vector2 v){
 		int x = Mathf.RoundToInt(v.x);
@@ -277,13 +271,9 @@ public class boardManager : MonoBehaviour {
 			hit = true;
 		}
         // If damage is applied to a player
-		if (players.Count == 2) {
-			foreach (player p in players) {
-				if (p.getPosition () == position) {
-					damage.applyToPlayer (p);
-					hit = true;
-				}
-			}
+		if (occupiedByPlayer(position)) {
+			damage.applyToPlayer(getPlayer(position));
+			hit = true;
 		}
 		board [pos[0], pos[1]].addDamage (damage);
         anim.explode( position, Quaternion.identity);
@@ -297,6 +287,24 @@ public class boardManager : MonoBehaviour {
 		}
 	}
 
+	bool occupiedByPlayer(Vector2 pos){
+		if (players.Count > 0) {
+			foreach (player p in players) {
+				if (p.getPosition () == pos) return true;
+			}
+		}
+		return false;
+	}
+
+	player getPlayer(Vector2 pos){
+		if (players.Count > 0) {
+			foreach (player p in players) {
+				if (p.getPosition () == pos) return p;
+			}
+		}
+		return null;
+	}
+	
 	/*
      * Copied from http://answers.unity3d.com/questions/62644/distance-between-a-ray-and-a-point.html
      * Calculates the distance between a point and a line
@@ -327,7 +335,7 @@ public class boardManager : MonoBehaviour {
 			List<turret> turretList = this.getAttackingTurrets (v);
 			foreach (turret t in turretList) {
 				print ("One turret attacks!");
-				//this.bomb (v,t.getDamage());
+				this.bomb (v,t.getDamage());
 			}
 		}
 	}

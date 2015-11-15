@@ -39,7 +39,7 @@ public class inputManager : MonoBehaviour {
 		// Only temporary
 		commandable = false;
 		buildButton.SetActive (false);
-		maxSteps = 10;
+		maxSteps = 2;
 		// Only temporary
 	}
 
