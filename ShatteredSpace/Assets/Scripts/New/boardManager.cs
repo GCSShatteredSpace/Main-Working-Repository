@@ -252,8 +252,10 @@ public class boardManager : MonoBehaviour {
 		float turretX;
 		float turretY;
 		for (int i=0;i<turretSpawnPoint.Length;i++){
-			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){   
-				attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){  
+				if(getTile (turretSpawnPoint[i]).turretIsActivated()){
+					attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+				}
 			}
 		}
 		return attackers;        
