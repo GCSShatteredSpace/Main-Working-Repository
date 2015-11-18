@@ -1,0 +1,7 @@
+Game enters infinite loop (turn never ends) when players press space for too many times.
+Grenade does not generate damage at end of turn.
+Collision with turrets still creates discrepency between clients.
+Mines can only be fired once in the game. (easy fix)
+At some angles the player can shoot in between barriers.
+If you change weapon when plannning your move the attack remains
+Sometimes the players attack is out of sync. (Shots hit when they are not supposed to etc.)
