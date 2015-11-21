@@ -85,6 +85,8 @@ public class player : MonoBehaviour {
 								this.energy.ToString ();
 		} else {
 			playerIndex = 1;
+			// The other player gets a different database for its set of weapons (they are different instances)
+			database = Instantiate(database);
 			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.otherPlayers[0].name + ": " + 
 								this.energy.ToString();
 		}
@@ -311,7 +313,7 @@ public class player : MonoBehaviour {
 		weaponList.Add (wpnID);
 
 		// Can you believe that this actually generates a clone of stats? lol
-		weapon newWpn = Instantiate(database.weapons[wpnID]);
+		weapon newWpn = database.weapons[wpnID];
 
 		newWpn.setMaster (this);
 		weapons.Add (newWpn);
