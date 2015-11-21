@@ -78,6 +78,7 @@ public class player : MonoBehaviour {
 			playerIndex = 0;
 			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
 			playerMenu.setMyPlayer(this);
+			// Add blaster as starting weapon
 			addWeapon (0);
 			setWeapon (0);
 			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
@@ -90,18 +91,28 @@ public class player : MonoBehaviour {
 	}
 	
 	void Update(){
+		// Display energy
+		if (this.playerIndex == 0) {
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString (); 
+		}
+		else {
+			GameObject.Find ("player2Energy").GetComponent<Text> ().text = PhotonNetwork.otherPlayers[0].name + ": " + 
+				this.energy.ToString ();
+		}
+
 		if (tManager.getTurn()==turn) return;
 		if (tManager.getTime()==time) return;
 		// Everything happens in between!
 		//print ("Player Time = " + time.ToString ());
-		
 		// If we don't syncronize time first, weapons will be fired one step early
-		time=tManager.getTime();
+		time = tManager.getTime();
 		// Start of turn
-		if (time==0){
+		if (time == 0){
 			if (currWeapon.isPassive() && currWeapon.readyToFire()){
 				currWeapon.fireWeapon(Vector2.zero,time);
 			}
+			printMovement();
 		}
 		startStep ();
 		// End of turn
@@ -110,13 +121,13 @@ public class player : MonoBehaviour {
 			//print ("Player end of turn!");
 			//print("Turn:" + turn.ToString());
 		}
-		if (this.playerIndex == 0) {
-			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
-								this.energy.ToString (); 
-			}
-		else {
-			GameObject.Find ("player2Energy").GetComponent<Text> ().text = PhotonNetwork.otherPlayers[0].name + ": " + 
-								this.energy.ToString ();
+	}
+
+	// For debugging
+	void printMovement(){
+		print ("Player" + playerIndex.ToString ());
+		foreach(action item in actions){
+			print (item.movement);
 		}
 	}
 	
@@ -325,7 +336,9 @@ public class player : MonoBehaviour {
 	
 	
 	//sets actions and transfers actions to dummy players on other clients
+	// Called by inputManager
 	public void setActionSequence(Stack<action> commands){
+		actions.Clear ();
 		foreach (action item in commands) {
 			actions.Push(item);
 		}
@@ -341,13 +354,15 @@ public class player : MonoBehaviour {
 			}
 			photonView.RPC ("setSequence", PhotonTargets.Others);
 		}
+		print ("player"+playerIndex.ToString()+" got ready!");
+		tManager.getReady();
 		resetTurn ();
 	}
 	
 	[PunRPC]
 	void transferAction(Vector2 mov, Vector2 att, int wId, Vector2 extra){
 		action a = new action ();
-		a.movement = mov;
+		a.movement = mov; 
 		a.attack = att;
 		a.weaponId = wId;
 		a.extraMovement = extra;
@@ -358,6 +373,5 @@ public class player : MonoBehaviour {
 	void setSequence(){
 		setActionSequence (copy);
 		copy.Clear ();
-		tManager.getReady ();
 	}	
 }

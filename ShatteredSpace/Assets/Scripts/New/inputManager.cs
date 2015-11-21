@@ -39,7 +39,7 @@ public class inputManager : MonoBehaviour {
 		// Only temporary
 		commandable = false;
 		buildButton.SetActive (false);
-		maxSteps = 2;
+		maxSteps = 10;
 		// Only temporary
 	}
 
@@ -51,7 +51,6 @@ public class inputManager : MonoBehaviour {
 	void Update () {
 		if (Input.GetKey ("space") && commandable) {
 			// Temporary code
-			tManager.getReady();
 			myPlayer.setActionSequence(commands);
 			commandable = false;
 			buildButton.SetActive (false);

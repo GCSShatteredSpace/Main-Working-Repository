@@ -100,18 +100,26 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void resetTurn(){
-		//print ("Turn reset!");
+		print ("Turn reset!");
 		endCurrentStep ();
 		readyPlayers = 0;
-		for (int i = 0; i<finishedPlayerArray.Length; i++) {
+		for (int i = 0; i < players.Count; i++) {
 			finishedPlayerArray[i] = false;
+			players [i].resetTurn ();
 		}
 		turnStarted = false;
 		stoppedPlayers = 0;
-		players [0].resetTurn ();
 		time = -1;
 
 		iManager.startNewTurn (players [0].getPosition ());
+	}
+
+	void endCurrentStep (){
+		for (int i=0; i < players.Count; i++) {
+			readyForStep [i] = false;
+			currentMovement [i] = Vector2.zero;
+			currentExtraMovement [i] = Vector2.zero;
+		}
 	}
 
 	// Where players declare that they are done with moving!
@@ -124,8 +132,12 @@ public class turnManager : MonoBehaviour {
 
 	// Where players declare that they are done with everything!
 	public void finishAction (int playerId){
-		finishedPlayerArray [playerId] = true;
-		if (getFinishedPlayers() == PhotonNetwork.playerList.Length && turnStarted) endTurn();
+		if (turnStarted) {
+			print ("Player" + playerId.ToString () + " finished turn!");
+			finishedPlayerArray [playerId] = true;
+			if (getFinishedPlayers () == players.Count && turnStarted)
+				endTurn ();
+		}
 	}
 
 	public int getFinishedPlayers(){
@@ -309,14 +321,6 @@ public class turnManager : MonoBehaviour {
 		bManager.doTurretDamage(pos);
 	}
 
-	void endCurrentStep (){
-		for (int i=0; i<2; i++) {
-			readyForStep [i] = false;
-			currentMovement [i] = Vector2.zero;
-			currentExtraMovement [i] = Vector2.zero;
-		}
-	}
-	
 	public bool endOfPlayerMovement(){
 		return stoppedPlayers == PhotonNetwork.playerList.Length;
 	}
