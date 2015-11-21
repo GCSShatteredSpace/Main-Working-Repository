@@ -92,7 +92,7 @@ public class turnManager : MonoBehaviour {
 		foreach (player p in players) {
 			playerTakeTurretDamage (p);
 		}
-		print ("end turn!");
+		//print ("end turn!");
 		// Note the difference between start and stop coroutine!!
 		StopCoroutine ("clock");
 		// Clear
@@ -127,13 +127,15 @@ public class turnManager : MonoBehaviour {
 	// Bombs might fall in this stage
 	public void stopMovement(){
 		//print (stoppedPlayers.ToString()+ " players stopped!");
-		stoppedPlayers ++;
+		if (turnStarted) {
+			stoppedPlayers ++;
+		}
 	}
 
 	// Where players declare that they are done with everything!
 	public void finishAction (int playerId){
 		if (turnStarted) {
-			print ("Player" + playerId.ToString () + " finished turn!");
+			//print ("Player" + playerId.ToString () + " finished turn!");
 			finishedPlayerArray [playerId] = true;
 			if (getFinishedPlayers () == players.Count && turnStarted)
 				endTurn ();
@@ -322,6 +324,9 @@ public class turnManager : MonoBehaviour {
 	}
 
 	public bool endOfPlayerMovement(){
-		return stoppedPlayers == PhotonNetwork.playerList.Length;
+		if (stoppedPlayers == players.Count) {
+			print ("End of player movement");
+		}
+		return stoppedPlayers == players.Count;
 	}
 }

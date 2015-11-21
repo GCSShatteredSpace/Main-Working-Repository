@@ -29,8 +29,7 @@ public class minigun : weapon
 	static private int MAXSHOTS = 3;
 	
 	private List<FireInstance> shots;
-	// The most basic weapon
-	// Need to add recoil push after upgrades
+
 	private int numDmgGenerated = 0;
 	
 	

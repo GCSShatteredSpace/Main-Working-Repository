@@ -66,6 +66,7 @@ public class mine : weapon
 		print ("mines.Count="+mines.Count.ToString());
 		// Since the weapon takes care of itself, the player don't have to wait for it to hit
 		this.getMaster().weaponHit();
+		this.setShotsPlanned(0);
 	}
 	
 	void generateDamage(int index,bool hit)
