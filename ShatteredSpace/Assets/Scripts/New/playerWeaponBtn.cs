@@ -34,7 +34,7 @@ public class playerWeaponBtn : MonoBehaviour {
 
 	public void setWpnID(int wpnID){
 		weaponID = wpnID;
-		btnText.text = database.weapons [wpnID].getName ();
+		btnText.text = "???";
 	}
 
 	void display(){
@@ -57,4 +57,9 @@ public class playerWeaponBtn : MonoBehaviour {
 	public int getWeaponID(){
 		return weaponID;
 	}
+
+	public void reveal(){
+		btnText.text = database.weapons [weaponID].getName ();
+	}
+
 }

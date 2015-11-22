@@ -11,7 +11,8 @@ public class playerWpnMenu : MonoBehaviour {
 	[SerializeField] Transform canvas;
 
 	player myPlayer;
-	bool playerIsSet= false;	// There must be better ways to do it but I only know the most straight forward one.
+	bool playerIsSet = false;	// There must be better ways to do it but I only know the most straight forward one.
+	[SerializeField] bool isOpponentMenu;
 
 	// The positions for generating a new button
 	const int spacing = 50;
@@ -38,6 +39,9 @@ public class playerWpnMenu : MonoBehaviour {
 		weaponIDs.Add (wpnID);
 		buttons.Add (button);
 		button.setWpnID (wpnID);
+		if (!isOpponentMenu) {
+			button.reveal ();
+		}
 	}
 
 	public void setPlayerWeapon(){
@@ -63,5 +67,9 @@ public class playerWpnMenu : MonoBehaviour {
 	public void setMyPlayer(player p){
 		myPlayer = p;
 		playerIsSet = true;
+	}
+
+	public void revealWeapon(int btnIndex){
+		buttons [btnIndex].reveal ();
 	}
 }

@@ -87,6 +87,7 @@ public class player : MonoBehaviour {
 			playerIndex = 1;
 			// The other player gets a different database for its set of weapons (they are different instances)
 			database = Instantiate(database);
+			playerMenu = GameObject.Find("oppoentWeaponMenu").GetComponent<playerWpnMenu>();
 			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.otherPlayers[0].name + ": " + 
 								this.energy.ToString();
 		}
@@ -153,6 +154,7 @@ public class player : MonoBehaviour {
 			//			print ("current attack: "+currentAction.attack.ToString());
 			if(currentAction.attack!=new Vector2(0.5f,0.5f)){
 				currWeapon.fireWeapon(currentAction.attack,time);
+				playerMenu.revealWeapon(weapons.IndexOf(currWeapon));
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
 			}
@@ -318,7 +320,7 @@ public class player : MonoBehaviour {
 		newWpn.setMaster (this);
 		weapons.Add (newWpn);
 		//Assuming player is not allowed to buy additional blasters(wpnID = 0)
-		if (photonView.isMine && wpnID != 0) {
+		if (wpnID != 0) {
 			playerMenu.addWeapon (wpnID);
 		}
 	}
