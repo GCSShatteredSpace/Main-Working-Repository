@@ -212,7 +212,7 @@ public class player : MonoBehaviour {
 	
 	void die(){
 		SendNetworkMessage(PhotonNetwork.player.name + " is destroyed and revived!");
-		energy = database.playerStartEnergy;
+		takeDamage(energy - database.playerStartEnergy);
 		SendNetworkMessage(PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
 	}
 	

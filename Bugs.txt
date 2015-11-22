@@ -5,3 +5,6 @@ Game enters infinite loop (turn never ends) when players press space for too man
 At some angles the player can shoot in between barriers.
 If you change weapon when plannning your move the attack remains
 Sometimes the players attack is out of sync. (Shots hit when they are not supposed to etc.)
+Explosion prefabs never go away.
+Clicking on menu items will also input command on the board which is annoying.
+No dangerous sign.
