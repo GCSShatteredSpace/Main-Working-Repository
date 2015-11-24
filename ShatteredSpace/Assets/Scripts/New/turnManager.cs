@@ -324,9 +324,6 @@ public class turnManager : MonoBehaviour {
 	}
 
 	public bool endOfPlayerMovement(){
-		if (stoppedPlayers == players.Count) {
-			print ("End of player movement");
-		}
 		return stoppedPlayers == players.Count;
 	}
 }

@@ -8,3 +8,4 @@ Sometimes the players attack is out of sync. (Shots hit when they are not suppos
 Explosion prefabs never go away.
 Clicking on menu items will also input command on the board which is annoying.
 No dangerous sign.
+After building minigun, every single weapon can be fired multiple times in one turn.
