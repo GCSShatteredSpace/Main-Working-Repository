@@ -13,28 +13,68 @@ public class boardManager : MonoBehaviour {
     const float ratio = 0.8666f; // Sqrt(3)/2
     const float epsilon = 0.01f; // Good enough for our purposes
 	float tileSize;
+    int tn;
+    int time;
 
 
     [SerializeField] statsManager dataBase;
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
     [SerializeField] AnimationController anim;
+    [SerializeField] turnManager  turn;
     [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
+    [SerializeField] int[] turretSpawnTimers = new int[5];
     [SerializeField] Vector2[] barrierSpawnPoint = new Vector2[12]; // Barrier numbers may vary
 
 	[SerializeField] GameObject gameTile;
 	[SerializeField] GameObject turretGameObj;
 	[SerializeField] GameObject blastShieldGameObj;
+    [SerializeField] GameObject energy;
 
-	tile[,] board;
+    tile[,] board;
 
     List<player> players = new List<player>();
 	List<turret> turrets = new List<turret>();
 
     void Start(){
         tileSize = dataBase.tileSize;
-		generateHexMap (dataBase.mapSize);
-		generateMapObjects ();
+		generateHexMap(dataBase.mapSize);
+		generateMapObjects();
     }
+
+    void Update()
+    {
+        if (turn.getTime() == time) return;
+		// Time/step based events
+		time = turn.getTime();
+        for (int i = 0; i < turretSpawnPoint.Length-1; i++)
+		{
+            List<int> temp = vecToBoard(turretSpawnPoint[i]);
+            tile myTile = board[temp[0], temp[1]];
+			if (myTile.hasEnergy() && occupiedByPlayer(turretSpawnPoint[i])) {
+				getPlayer(turretSpawnPoint[i]).takeDamage(-1 * dataBase.turretStartEnergy);
+				myTile.setEnergy(false);
+				GameObject.Destroy(myTile.getEnergy());
+			}
+		}
+		// Turn-based events
+		if (turn.getTurn() == tn) return;
+		for (int i = 0; i < turretSpawnPoint.Length-1; i++)
+		{
+			// Spawning a turret while a player's on the spot would cause infinite recursion
+			// And that crashes the game, as you might have expected
+			if (turretSpawnTimers[i] >= dataBase.turretRespawnTime && !occupiedByPlayer(turretSpawnPoint[i]))
+			{
+				spawnTurret(turretSpawnPoint[i]);
+				turretSpawnTimers[i] = 0;
+			}
+			else if (turretSpawnTimers[i] >= 1)
+			{
+				turretSpawnTimers[i]++;
+			}
+		}
+		// This makes sure that the event only happens once per turn
+		tn = turn.getTurn();
+	}
 	
 	// Always use this function when dealing with in-game vectors!
 	List<int> vecToBoard(Vector2 v){
@@ -72,19 +112,24 @@ public class boardManager : MonoBehaviour {
 		}
 	}
 
+    void spawnTurret(Vector2 pos)
+    {
+        Vector3 spawnPosition = SS.hexPositionTransform(pos);
+        List<int> temp = vecToBoard(pos);
+        int x = temp[0], y = temp[1];
+        board[x, y].activateTurret(true);
+        GameObject instance = Instantiate(turretGameObj, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
+        turret currTurret = instance.GetComponent<turret>();
+        board[x, y].setTurret(currTurret);
+        turrets.Add(currTurret);
+        currTurret.setPos(pos);
+    }
+
 	void generateMapObjects(){
 		// Spawn turrets
 		foreach (Vector2 pos in turretSpawnPoint) {
-			Vector3 spawnPosition = SS.hexPositionTransform(pos);
-			List<int> temp = vecToBoard(pos);
-			int x = temp[0],y = temp[1];
-			board[x,y].activateTurret(true);
-			GameObject instance = Instantiate(turretGameObj,spawnPosition,Quaternion.LookRotation(Vector3.up)) as GameObject;
-			turret currTurret = instance.GetComponent<turret>();
-			board[x,y].setTurret(currTurret);
-			turrets.Add(currTurret);
-			currTurret.setPos(pos);
-		}
+            spawnTurret(pos);
+        }
 		// Spawn balst shields
 		foreach (Vector2 pos in barrierSpawnPoint) {
 			Vector3 spawnPosition = SS.hexPositionTransform(pos);
@@ -95,17 +140,19 @@ public class boardManager : MonoBehaviour {
 		}
 	}
 
-	// This wipes all the damage on the board for the next step
-	public void cleanBoard(){
-		foreach (tile t in board) {
-			t.clearDamage();
-		}
-	}
-
 	public void destroyTurret(Vector2 pos){
 		List<int> temp = vecToBoard (pos);
-		board [temp [0], temp [1]].activateTurret (false);
-	}
+        tile myTile = board[temp[0], temp[1]];
+        myTile.activateTurret (false);
+        myTile.setEnergy(true);
+        Vector3 spawnPosition = SS.hexPositionTransform(pos);
+        GameObject instance = Instantiate(energy, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
+        myTile.setEnergy(true);		// wow
+        myTile.setEnergy(instance);	// so rigor
+        int spawnIndex=0;
+        while (turretSpawnPoint[spawnIndex] != pos) spawnIndex++;
+        turretSpawnTimers[spawnIndex] = 1;
+    }
 	
     public Vector3 ProjectPointLine(Vector3 point, Vector3 lineStart, Vector3 lineEnd){
         Vector3 rhs = point - lineStart;
@@ -124,7 +171,6 @@ public class boardManager : MonoBehaviour {
      * Returns whether the projectile is blocked by barriers
      */
     public bool isBlocked(Vector2 firePosition, Vector2 targetPosition){
-        int count=0;
         Vector3 firePos = SS.hexPositionTransform(firePosition);
         Vector3 targetPos = SS.hexPositionTransform(targetPosition);
         Vector3 barrierPos;
@@ -206,8 +252,10 @@ public class boardManager : MonoBehaviour {
 		float turretX;
 		float turretY;
 		for (int i=0;i<turretSpawnPoint.Length;i++){
-			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){   
-				attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){  
+				if(getTile (turretSpawnPoint[i]).turretIsActivated()){
+					attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+				}
 			}
 		}
 		return attackers;        
@@ -225,19 +273,40 @@ public class boardManager : MonoBehaviour {
 			hit = true;
 		}
         // If damage is applied to a player
-		if (players.Count == 2) {
-			foreach (player p in players) {
-				if (p.getPosition () == position) {
-					damage.applyToPlayer (p);
-					hit = true;
-				}
-			}
+		if (occupiedByPlayer(position)) {
+			damage.applyToPlayer(getPlayer(position));
+			hit = true;
 		}
 		board [pos[0], pos[1]].addDamage (damage);
         anim.explode( position, Quaternion.identity);
 		return hit;
 	}
 
+	// This wipes all the damage on the board for the next step
+	public void cleanBoard(){
+		foreach (tile t in board) {
+			t.clearDamage();
+		}
+	}
+
+	bool occupiedByPlayer(Vector2 pos){
+		if (players.Count > 0) {
+			foreach (player p in players) {
+				if (p.getPosition () == pos) return true;
+			}
+		}
+		return false;
+	}
+
+	player getPlayer(Vector2 pos){
+		if (players.Count > 0) {
+			foreach (player p in players) {
+				if (p.getPosition () == pos) return p;
+			}
+		}
+		return null;
+	}
+	
 	/*
      * Copied from http://answers.unity3d.com/questions/62644/distance-between-a-ray-and-a-point.html
      * Calculates the distance between a point and a line
@@ -268,7 +337,7 @@ public class boardManager : MonoBehaviour {
 			List<turret> turretList = this.getAttackingTurrets (v);
 			foreach (turret t in turretList) {
 				print ("One turret attacks!");
-				//this.bomb (v,t.getDamage());
+				this.bomb (v,t.getDamage());
 			}
 		}
 	}

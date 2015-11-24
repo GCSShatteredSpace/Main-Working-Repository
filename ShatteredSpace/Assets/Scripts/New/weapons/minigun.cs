@@ -29,8 +29,7 @@ public class minigun : weapon
 	static private int MAXSHOTS = 3;
 	
 	private List<FireInstance> shots;
-	// The most basic weapon
-	// Need to add recoil push after upgrades
+
 	private int numDmgGenerated = 0;
 	
 	
@@ -52,9 +51,10 @@ public class minigun : weapon
 					print("FireTime = " + shot.fireTime.ToString());
 					setTargetPos(shot.targetPosition);
 					generateDamage();
-					shot.generatedDamage = false;
+					shot.generatedDamage =  true;
 					print("dmg generated");
 					numDmgGenerated = 0;
+					shots[i] = shot;
 				}
 			}
 		}

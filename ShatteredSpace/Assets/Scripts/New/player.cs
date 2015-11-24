@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ public class player : MonoBehaviour {
 	[SerializeField]turnManager tManager;
 	[SerializeField]functionManager SS;
 	[SerializeField]statsManager database;
-
+	
 	PhotonView photonView;
 	public delegate void SendMessage(string MessageOverlay);
 	public event SendMessage SendNetworkMessage;
@@ -30,19 +31,19 @@ public class player : MonoBehaviour {
 	bool finishedTurn;
 	int waitCount;	// Keeps track of the num of weapons that are not done
 	// Temporary
-
+	
 	weapon currWeapon;
-
+	
 	List<weapon> weapons = new List<weapon> ();
 	List<int> weaponList = new List<int>();
 	playerWpnMenu playerMenu;
-
+	
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
-
+	
 	void Awake () {
 		initPlayer ();
 	}
-
+	
 	void initPlayer(){
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
@@ -53,9 +54,9 @@ public class player : MonoBehaviour {
 		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 		
 		myPlayer = this.gameObject;
-
+		
 		energy = database.playerStartEnergy;
-
+		
 		time = -1;
 		turn = 0;
 		waitCount = 0;
@@ -64,9 +65,9 @@ public class player : MonoBehaviour {
 		// are done in a stepTime
 		speed = 3 / database.stepTime;
 		// Temp
-
+		
 		photonView = PhotonView.Get (this);
-
+		
 		// You have to add it as a component for the Update and Start methods to run
 		// Pretty disturbing if you think about it...
 		// All players start with blaster
@@ -77,26 +78,44 @@ public class player : MonoBehaviour {
 			playerIndex = 0;
 			playerMenu = GameObject.Find("currentWeaponMenu").GetComponent<playerWpnMenu>();
 			playerMenu.setMyPlayer(this);
+			// Add blaster as starting weapon
 			addWeapon (0);
 			setWeapon (0);
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+								this.energy.ToString ();
 		} else {
 			playerIndex = 1;
+			// The other player gets a different database for its set of weapons (they are different instances)
+			database = Instantiate(database);
+			playerMenu = GameObject.Find("oppoentWeaponMenu").GetComponent<playerWpnMenu>();
+			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.otherPlayers[0].name + ": " + 
+								this.energy.ToString();
 		}
 	}
-
+	
 	void Update(){
+		// Display energy
+		if (this.playerIndex == 0) {
+			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
+				this.energy.ToString (); 
+		}
+		else {
+			GameObject.Find ("player2Energy").GetComponent<Text> ().text = PhotonNetwork.otherPlayers[0].name + ": " + 
+				this.energy.ToString ();
+		}
+
 		if (tManager.getTurn()==turn) return;
 		if (tManager.getTime()==time) return;
 		// Everything happens in between!
 		//print ("Player Time = " + time.ToString ());
-
 		// If we don't syncronize time first, weapons will be fired one step early
-		time=tManager.getTime();
+		time = tManager.getTime();
 		// Start of turn
-		if (time==0){
+		if (time == 0){
 			if (currWeapon.isPassive() && currWeapon.readyToFire()){
 				currWeapon.fireWeapon(Vector2.zero,time);
 			}
+			printMovement();
 		}
 		startStep ();
 		// End of turn
@@ -107,10 +126,18 @@ public class player : MonoBehaviour {
 		}
 	}
 
+	// For debugging
+	void printMovement(){
+		print ("Player" + playerIndex.ToString ());
+		foreach(action item in actions){
+			print (item.movement);
+		}
+	}
+	
 	public void addPlayerList(PhotonView v, Vector2 startPos){
 		v.RPC ("addPlayer", PhotonTargets.OthersBuffered, v.viewID, startPos);
 	}
-
+	
 	//Existing players recieve data about the new player that has joined
 	[PunRPC]
 	void addPlayer(int id, Vector2 startPos){
@@ -119,19 +146,20 @@ public class player : MonoBehaviour {
 		initPlayer ();
 		tManager.addPlayer (p);
 	}
-
+	
 	void startStep (){
 		//print ("Prepare to move!");
-		if (actions.Count > 0 && !finishedTurn) {
+		if (actions.Count > 0) {
 			action currentAction = actions.Pop();
-//			print ("current attack: "+currentAction.attack.ToString());
+			//			print ("current attack: "+currentAction.attack.ToString());
 			if(currentAction.attack!=new Vector2(0.5f,0.5f)){
 				currWeapon.fireWeapon(currentAction.attack,time);
+				playerMenu.revealWeapon(weapons.IndexOf(currWeapon));
 				// Everytime we fire a weapon we have to wait for it to hit something
 				waitCount+=1;
 			}
 			if (actions.Count > 0){
-		//		print (this.playerIndex + " " + actions.Peek().movement.ToString());
+				//		print (this.playerIndex + " " + actions.Peek().movement.ToString());
 				Vector2 velocity = actions.Peek().movement-currentAction.movement;
 				// Action contain position while we need velocity!
 				tManager.attemptToMove (velocity,currentAction.extraMovement,playerIndex);
@@ -144,7 +172,8 @@ public class player : MonoBehaviour {
 			if (!finishedTurn){
 				tManager.stopMovement();
 			}
-			finishedTurn=true;
+
+			finishedTurn = true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
 			// Notice that one player can be done with actions and still move because they are knocked away
 			tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
@@ -154,15 +183,15 @@ public class player : MonoBehaviour {
 			momentum = Vector2.zero;
 		}
 	}
-
+	
 	public void resetTurn(){
 		finishedTurn = false;
 		momentum = Vector2.zero;
 	}
-
+	
 	// The weapon tells the player that it's done
 	public void weaponHit(){
-//		print ("Weapon has hit!");
+		//		print ("Weapon has hit!");
 		waitCount -= 1;
 	}
 	
@@ -172,7 +201,7 @@ public class player : MonoBehaviour {
 			photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
 		}
 	}
-
+	
 	[PunRPC]
 	void networkTakeDamage(int amount){
 		energy -= amount;
@@ -180,13 +209,13 @@ public class player : MonoBehaviour {
 		SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
 		if (energy <= 0) die();
 	}
-
+	
 	void die(){
 		SendNetworkMessage(PhotonNetwork.player.name + " is destroyed and revived!");
-		energy = database.playerStartEnergy;
+		takeDamage(energy - database.playerStartEnergy);
 		SendNetworkMessage(PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
 	}
-  	
+	
 	// Called by turn manager
 	public IEnumerator moveStep(List<Vector2> vSequence){
 		float time;
@@ -198,16 +227,16 @@ public class player : MonoBehaviour {
 				StartCoroutine(move(playerPosition+vSequence[i],time));
 				yield return new WaitForSeconds(time);
 			}
-
+			
 		}
 	}
-
-  	IEnumerator move(Vector2 target, float time){
+	
+	IEnumerator move(Vector2 target, float time){
 		//print ("move!");
 		//print ("Target:" + target.ToString ());
 		//print ("Time estimate:");
 		//print (time);
-
+		
 		Vector3 startPos = SS.hexPositionTransform(playerPosition);
 		Vector3 endPos =  SS.hexPositionTransform(target);
 		float d = Vector3.Distance(startPos,endPos);
@@ -215,7 +244,7 @@ public class player : MonoBehaviour {
 		float v = d/time * Time.fixedDeltaTime;
 		int step = Mathf.FloorToInt(time/Time.fixedDeltaTime)+1;
 		float currTime = Time.time;
-
+		
 		// Actually making the move in the board
 		playerPosition = target;
 		for(int i = 0;i<step;i++){    
@@ -226,45 +255,45 @@ public class player : MonoBehaviour {
 		//Debug.Log("Difference:");       // Trying to see if it works!
 		//Debug.Log(Time.time-currTime-time);
 	}
-
+	
 	public weapon getWeapon(){
 		// This is just temporary
 		return currWeapon;
 	}
-
+	
 	public Vector2 getPosition(){
 		//print ("player pos" + playerPosition);
 		return playerPosition;
 	}
-
+	
 	public void setPosition(Vector2 pos){
 		playerPosition = pos;
 	}
-
+	
 	public void addMomentum(Vector2 push){
 		// Momentum shouldn't really add
 		// Cause it will break the game
 		momentum = push;
 		print("Gained momentum!");
 	}
-
+	
 	public int getID(){
 		return playerGameID;
 	}
-
+	
 	public void setID(int i){
 		playerGameID = i;
 		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
 	}
-
+	
 	public int getPlayerIndex(){
 		return playerIndex;
 	}
-
+	
 	public void setWeapon(int weaponIndex){
 		photonView.RPC ("networkSetWeapon", PhotonTargets.AllBuffered, weaponIndex);
 	}
-
+	
 	[PunRPC]
 	void networkSetWeapon(int weaponIndex){
 		int i;
@@ -276,23 +305,26 @@ public class player : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	public void addWeapon(int wpnID){
 		photonView.RPC ("networkAddWeapon", PhotonTargets.AllBuffered, wpnID);
 	}
-
+	
 	[PunRPC]
 	void networkAddWeapon(int wpnID){
 		weaponList.Add (wpnID);
-		weapon newWpn = Instantiate(database.weapons[wpnID]);
+
+		// Can you believe that this actually generates a clone of stats? lol
+		weapon newWpn = database.weapons[wpnID];
+
 		newWpn.setMaster (this);
 		weapons.Add (newWpn);
 		//Assuming player is not allowed to buy additional blasters(wpnID = 0)
-		if (photonView.isMine && wpnID != 0) {
+		if (wpnID != 0) {
 			playerMenu.addWeapon (wpnID);
 		}
 	}
-
+	
 	public bool hasWeapon(int wpnID){
 		if (weaponList.Contains (wpnID)) {
 			return true;
@@ -300,15 +332,17 @@ public class player : MonoBehaviour {
 			return false;
 		}
 	}
-
+	
 	[PunRPC]
 	void transferID(int i){
 		playerGameID = i;
 	}
 	
-
+	
 	//sets actions and transfers actions to dummy players on other clients
+	// Called by inputManager
 	public void setActionSequence(Stack<action> commands){
+		actions.Clear ();
 		foreach (action item in commands) {
 			actions.Push(item);
 		}
@@ -320,27 +354,28 @@ public class player : MonoBehaviour {
 			}
 			foreach (action item in rev) {
 				photonView.RPC ("transferAction", PhotonTargets.Others, item.movement, item.attack,
-			                item.weaponId, item.extraMovement);
+				                item.weaponId, item.extraMovement);
 			}
 			photonView.RPC ("setSequence", PhotonTargets.Others);
 		}
+		print ("player"+playerIndex.ToString()+" got ready!");
+		tManager.getReady();
 		resetTurn ();
 	}
-
+	
 	[PunRPC]
 	void transferAction(Vector2 mov, Vector2 att, int wId, Vector2 extra){
 		action a = new action ();
-		a.movement = mov;
+		a.movement = mov; 
 		a.attack = att;
 		a.weaponId = wId;
 		a.extraMovement = extra;
 		copy.Push (a);
 	}
-
+	
 	[PunRPC]
 	void setSequence(){
 		setActionSequence (copy);
 		copy.Clear ();
-		tManager.getReady ();
 	}	
 }

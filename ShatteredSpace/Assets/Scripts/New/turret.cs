@@ -4,9 +4,7 @@ using System.Collections.Generic;
 
 public class turret : MonoBehaviour {
 
-	public static int TURRET_DAMAGE = 0;
-
-	statsManager dataBase;
+	statsManager database;
 	boardManager bManager;
 
 	Vector2 turretPos;
@@ -14,15 +12,15 @@ public class turret : MonoBehaviour {
 
 	void Awake () {
 		GameObject gameController = GameObject.Find ("gameController");
-		dataBase = GameObject.Find ("stats").GetComponent<statsManager> ();
+		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 		bManager = gameController.GetComponent<boardManager> ();
 
-		energy = dataBase.turretStartEnergy;
+		energy = database.turretStartEnergy;
 	}
 
 	public damageInfo getDamage(){
 		damageInfo d = new damageInfo ();
-		d.damageAmount = TURRET_DAMAGE;
+		d.damageAmount = database.turretDamage;
 		return d;
 	}
 	public void takeDamage(damageInfo damage){

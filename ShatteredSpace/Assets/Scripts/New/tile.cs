@@ -5,7 +5,8 @@ using System.Collections.Generic;
 public class tile : MonoBehaviour {
 
 	bool isPlayer;
-	bool isDamage;
+    bool isEnergy;
+    bool isDamage;
 	bool isTurret;
 	bool isWall;
 	bool wallUp;
@@ -13,12 +14,18 @@ public class tile : MonoBehaviour {
 	List<damageInfo> damageInfos = new List<damageInfo>();
 	int playerId;
 	turret myTurret;
+    GameObject myEnergy;
 
-	public bool hasPlayer(){
+    public bool hasPlayer(){
 		return isPlayer;
 	}
 
-	public bool hasDamage(){
+    public bool hasEnergy()
+    {
+        return isEnergy;
+    }
+
+    public bool hasDamage(){
 		return isDamage;
 	}
 
@@ -69,16 +76,31 @@ public class tile : MonoBehaviour {
 		return myTurret;
 	}
 
-	// Once it's set to be a blast sheld, it cannot be changed
-	public void setBlastShield(){
+    public void setEnergy(GameObject e)
+    {
+        myEnergy = e;
+    }
+
+    public GameObject getEnergy()
+    {
+        return myEnergy;
+    }
+
+    // Once it's set to be a blast sheld, it cannot be changed
+    public void setBlastShield(){
 		isWall = true;
 	}
 	
 	public void activateTurret(bool isTrue){
 		turretUp = isTrue;
 	}
-	
-	public void activateWall(bool isTrue){
+
+    public void setEnergy(bool isTrue)
+    {
+        isEnergy = isTrue;
+    }
+
+    public void activateWall(bool isTrue){
 		wallUp = isTrue;
 	}
 	

@@ -12,7 +12,7 @@ public class networkController : MonoBehaviour {
 	[SerializeField] InputField username;
 	[SerializeField] InputField roomName;
 	[SerializeField] InputField roomList;
-	[SerializeField] InputField messageWindow;
+	[SerializeField] Text messageWindow;
 
 	functionManager SS;
 	inputManager iManager;
@@ -23,7 +23,9 @@ public class networkController : MonoBehaviour {
 	GameObject thisPlayer;
 
 	Queue<string> messages = new Queue<string>();
-	const int messageCount = 10;
+	const int messageCount = 100;
+	// The size increment for the textbox for each message
+	const int lineHeight = 10;
 	int numPlayers;
 
 	void Start () {
@@ -132,12 +134,13 @@ public class networkController : MonoBehaviour {
 	void AddMessage_RPC(string message)
 	{
 		messages.Enqueue (message);
-		if(messages.Count > messageCount)
-			messages.Dequeue();
-		
+//		if(messages.Count > messageCount)
+//			messages.Dequeue();
+
 		messageWindow.text = "";
 		foreach(string m in messages)
 			messageWindow.text += m + "\n";
+		messageWindow.text = messageWindow.text.Substring (0, messageWindow.text.Length - 1);
 	}
 
 }

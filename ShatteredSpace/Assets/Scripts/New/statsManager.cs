@@ -10,8 +10,10 @@ public class statsManager : MonoBehaviour {
 	public int turretRange;
 	public int playerStartEnergy;
 	public int turretStartEnergy;
+    public int turretRespawnTime;
+	public int turretDamage;
 
-	public int mapSize;
+    public int mapSize;
 
 	public List<weapon> weapons;
 
