@@ -19,6 +19,6 @@ public class AnimationController : MonoBehaviour {
 
     public void explode(Vector2 pos, Quaternion rot)
     {
-        GameObject a=GameObject.Instantiate(particleEffect.gameObject, SS.hexPositionTransform(pos), rot) as GameObject;
+        GameObject a = GameObject.Instantiate(particleEffect.gameObject, SS.hexPositionTransform(pos), rot) as GameObject;
     }
 }
