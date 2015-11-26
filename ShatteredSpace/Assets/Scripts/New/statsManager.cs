@@ -12,6 +12,7 @@ public class statsManager : MonoBehaviour {
 	public int turretStartEnergy;
     public int turretRespawnTime;
 	public int turretDamage;
+	public int upgradeExp;
 
     public int mapSize;
 

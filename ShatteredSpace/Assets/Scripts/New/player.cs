@@ -9,35 +9,40 @@ public class player : MonoBehaviour {
 	[SerializeField]turnManager tManager;
 	[SerializeField]functionManager SS;
 	[SerializeField]statsManager database;
+	GameObject myPlayer;
 	
+	// Networking stuff
 	PhotonView photonView;
 	public delegate void SendMessage(string MessageOverlay);
 	public event SendMessage SendNetworkMessage;
-	
-	GameObject myPlayer;
-	
-	[SerializeField] Vector2 playerPosition;
-	int energy;
-	int exp;
-	int time;
-	int turn;
-	Stack<action> actions = new Stack<action>();
-	Stack<action> copy = new Stack<action> ();
-	//LinkedList<action> actStack; 	// I don't know how it works, it keeps on giving me bugs!
-	
 	[SerializeField] public int playerIndex;
 	[SerializeField] int playerGameID;
-	[SerializeField] float speed;
+
+	// Turn management stuff
 	bool finishedTurn;
 	int waitCount;	// Keeps track of the num of weapons that are not done
-	// Temporary
+	Stack<action> actions = new Stack<action>();
+	Stack<action> copy = new Stack<action> ();
 	
+	
+	// Gameplay stuff
+	[SerializeField] Vector2 playerPosition;
+	int energy;
+	Dictionary<string, int> exp = new Dictionary<string, int>();
+	int time;
+	int turn;
+	
+	// Animation stuff
+	[SerializeField] float speed;
+
+	// Weapon stuff
 	weapon currWeapon;
 	
 	List<weapon> weapons = new List<weapon> ();
 	List<int> weaponList = new List<int>();
 	playerWpnMenu playerMenu;
 	
+	// Special stuff
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
 	
 	void Awake () {
@@ -56,6 +61,10 @@ public class player : MonoBehaviour {
 		myPlayer = this.gameObject;
 		
 		energy = database.playerStartEnergy;
+		exp.Add("Momentum",0);
+		exp.Add("Explosive",0);
+		exp.Add("Particle",0);
+		exp.Add("Field",0);
 		
 		time = -1;
 		turn = 0;
@@ -83,6 +92,7 @@ public class player : MonoBehaviour {
 			setWeapon (0);
 			GameObject.Find ("player1Energy").GetComponent<Text> ().text = PhotonNetwork.player.name + ": " + 
 								this.energy.ToString ();
+			GameObject.Find("Main Camera").GetComponent<cameraMovement>().setPlayer(this.gameObject);
 		} else {
 			playerIndex = 1;
 			// The other player gets a different database for its set of weapons (they are different instances)
@@ -115,7 +125,7 @@ public class player : MonoBehaviour {
 			if (currWeapon.isPassive() && currWeapon.readyToFire()){
 				currWeapon.fireWeapon(Vector2.zero,time);
 			}
-			printMovement();
+			//printMovement();
 		}
 		startStep ();
 		// End of turn
@@ -132,19 +142,6 @@ public class player : MonoBehaviour {
 		foreach(action item in actions){
 			print (item.movement);
 		}
-	}
-	
-	public void addPlayerList(PhotonView v, Vector2 startPos){
-		v.RPC ("addPlayer", PhotonTargets.OthersBuffered, v.viewID, startPos);
-	}
-	
-	//Existing players recieve data about the new player that has joined
-	[PunRPC]
-	void addPlayer(int id, Vector2 startPos){
-		player p = (PhotonView.Find(id).gameObject.GetComponent<player>());
-		p.setPosition (startPos);
-		initPlayer ();
-		tManager.addPlayer (p);
 	}
 	
 	void startStep (){
@@ -189,33 +186,6 @@ public class player : MonoBehaviour {
 		momentum = Vector2.zero;
 	}
 	
-	// The weapon tells the player that it's done
-	public void weaponHit(){
-		//		print ("Weapon has hit!");
-		waitCount -= 1;
-	}
-	
-	public void takeDamage(int amount){
-		// This RPC seems redundant, but it handles building weapons
-		if (photonView.isMine) {
-			photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
-		}
-	}
-	
-	[PunRPC]
-	void networkTakeDamage(int amount){
-		energy -= amount;
-		SendNetworkMessage (PhotonNetwork.player.name + " took " + amount.ToString() + " damage!");
-		SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
-		if (energy <= 0) die();
-	}
-	
-	void die(){
-		SendNetworkMessage(PhotonNetwork.player.name + " is destroyed and revived!");
-		takeDamage(energy - database.playerStartEnergy);
-		SendNetworkMessage(PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
-	}
-	
 	// Called by turn manager
 	public IEnumerator moveStep(List<Vector2> vSequence){
 		float time;
@@ -231,6 +201,7 @@ public class player : MonoBehaviour {
 		}
 	}
 	
+	// Where the player's position actually changes
 	IEnumerator move(Vector2 target, float time){
 		//print ("move!");
 		//print ("Target:" + target.ToString ());
@@ -255,90 +226,83 @@ public class player : MonoBehaviour {
 		//Debug.Log("Difference:");       // Trying to see if it works!
 		//Debug.Log(Time.time-currTime-time);
 	}
-	
-	public weapon getWeapon(){
-		// This is just temporary
-		return currWeapon;
+
+	// -----------------------
+	// Weapon-related actions
+	// -----------------------
+
+	// The weapon tells the player that it's done
+	public void weaponHit(){
+		//		print ("Weapon has hit!");
+		waitCount -= 1;
 	}
 	
-	public Vector2 getPosition(){
-		//print ("player pos" + playerPosition);
-		return playerPosition;
-	}
-	
-	public void setPosition(Vector2 pos){
-		playerPosition = pos;
-	}
-	
-	public void addMomentum(Vector2 push){
-		// Momentum shouldn't really add
-		// Cause it will break the game
-		momentum = push;
-		print("Gained momentum!");
-	}
-	
-	public int getID(){
-		return playerGameID;
-	}
-	
-	public void setID(int i){
-		playerGameID = i;
-		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
-	}
-	
-	public int getPlayerIndex(){
-		return playerIndex;
-	}
-	
-	public void setWeapon(int weaponIndex){
-		photonView.RPC ("networkSetWeapon", PhotonTargets.AllBuffered, weaponIndex);
+	public void takeDamage(int amount){
+		// This RPC seems redundant, but it handles building weapons
+		if (photonView.isMine) {
+			photonView.RPC ("networkTakeDamage", PhotonTargets.All, amount);
+		}
 	}
 	
 	[PunRPC]
-	void networkSetWeapon(int weaponIndex){
-		int i;
-		for (i = 0; i < weaponList.Count; i++){
-			if (weaponList[i] == weaponIndex){
-				// Player doesn't store weapons in the order of weapon index
-				currWeapon = weapons [i];
-				return;
-			}
-		}
+	void networkTakeDamage(int amount){
+		energy -= amount;
+		SendNetworkMessage (PhotonNetwork.player.name + " took " + amount.ToString() + " damage!");
+		SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
+		if (energy <= 0) die();
 	}
-	
-	public void addWeapon(int wpnID){
-		photonView.RPC ("networkAddWeapon", PhotonTargets.AllBuffered, wpnID);
+
+	public void gainExp(string technology, int amount){
+		// This RPC seems redundant, but it handles building weapons
+		if (photonView.isMine) {
+			photonView.RPC ("networkGainExp", PhotonTargets.All, technology, amount);
+		}
 	}
 	
 	[PunRPC]
-	void networkAddWeapon(int wpnID){
-		weaponList.Add (wpnID);
+	void networkGainExp(string technology, int amount){
+		exp[technology] += amount;
+		SendNetworkMessage (PhotonNetwork.player.name + " gained " + amount.ToString() + " exp!");
+		SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " exp!");
+		if (exp[technology] >= database.upgradeExp) showNewUpgrades();
+	}
 
-		// Can you believe that this actually generates a clone of stats? lol
-		weapon newWpn = database.weapons[wpnID];
-
-		newWpn.setMaster (this);
-		weapons.Add (newWpn);
-		//Assuming player is not allowed to buy additional blasters(wpnID = 0)
-		if (wpnID != 0) {
-			playerMenu.addWeapon (wpnID);
-		}
+	void showNewUpgrades(){
+		
 	}
 	
-	public bool hasWeapon(int wpnID){
-		if (weaponList.Contains (wpnID)) {
-			return true;
-		}else{
-			return false;
-		}
+	void die(){
+		SendNetworkMessage(PhotonNetwork.player.name + " is destroyed and revived!");
+		takeDamage(energy - database.playerStartEnergy);
+		SendNetworkMessage(PhotonNetwork.player.name + " has " + energy.ToString() + " energy!");
 	}
 	
+	// ---------------------------------------
+	// Initializing the player in the network
+	// ---------------------------------------
+	
+	public void addPlayerList(PhotonView v, Vector2 startPos){
+		v.RPC ("addPlayer", PhotonTargets.OthersBuffered, v.viewID, startPos);
+	}
+	
+	//Existing players recieve data about the new player that has joined
+	[PunRPC]
+	void addPlayer(int id, Vector2 startPos){
+		player p = (PhotonView.Find(id).gameObject.GetComponent<player>());
+		p.setPosition (startPos);
+		initPlayer ();
+		tManager.addPlayer (p);
+	}
+
 	[PunRPC]
 	void transferID(int i){
 		playerGameID = i;
 	}
 	
-	
+	// ----------------------------------------------
+	// Sending and receiving commands to the network
+	// ----------------------------------------------
+
 	//sets actions and transfers actions to dummy players on other clients
 	// Called by inputManager
 	public void setActionSequence(Stack<action> commands){
@@ -378,4 +342,103 @@ public class player : MonoBehaviour {
 		setActionSequence (copy);
 		copy.Clear ();
 	}	
+
+	// -------------
+	// Weapon stuff
+	// -------------
+
+	public void setWeapon(int weaponIndex){
+		photonView.RPC ("networkSetWeapon", PhotonTargets.AllBuffered, weaponIndex);
+	}
+	
+	[PunRPC]
+	void networkSetWeapon(int weaponIndex){
+		int i;
+		for (i = 0; i < weaponList.Count; i++){
+			if (weaponList[i] == weaponIndex){
+				// Player doesn't store weapons in the order of weapon index
+				currWeapon = weapons [i];
+				return;
+			}
+		}
+	}
+	
+	public void addWeapon(int wpnID){
+		photonView.RPC ("networkAddWeapon", PhotonTargets.AllBuffered, wpnID);
+	}
+	
+	[PunRPC]
+	void networkAddWeapon(int wpnID){
+		weaponList.Add (wpnID);
+
+		// Can you believe that this actually generates a clone of stats? lol
+		weapon newWpn = database.weapons[wpnID];
+
+		newWpn.setMaster (this);
+		weapons.Add (newWpn);
+		//Assuming player is not allowed to buy additional blasters(wpnID = 0)
+		if (wpnID != 0) {
+			playerMenu.addWeapon (wpnID);
+		}
+	}
+
+	// ----------------
+	// Special actions
+	// ----------------
+
+	// Trapped by gravity trap
+	void getTrapped(){}
+
+	// Stunned by antibody grenade
+	void stun(){}
+
+	// Instantly move to another position
+	void teleport(){}
+
+	// -------------------
+	// Get-set functions
+	// -------------------
+
+	public weapon getWeapon(){
+		// This is just temporary
+		return currWeapon;
+	}
+	
+	public Vector2 getPosition(){
+		//print ("player pos" + playerPosition);
+		return playerPosition;
+	}
+	
+	public void setPosition(Vector2 pos){
+		playerPosition = pos;
+	}
+	
+	// Called by explosive damages that pushes player away
+	public void addMomentum(Vector2 push){
+		// Momentum shouldn't really add
+		// Cause it will break the game
+		momentum = push;
+		print("Gained momentum!");
+	}
+	
+	public int getID(){
+		return playerGameID;
+	}
+	
+	public void setID(int i){
+		playerGameID = i;
+		photonView.RPC ("transferID", PhotonTargets.OthersBuffered, i);
+	}
+	
+	public int getPlayerIndex(){
+		return playerIndex;
+	}
+	
+	public bool hasWeapon(int wpnID){
+		if (weaponList.Contains (wpnID)) {
+			return true;
+		}else{
+			return false;
+		}
+	}
 }

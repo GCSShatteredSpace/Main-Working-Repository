@@ -7,7 +7,7 @@ public class inputManager : MonoBehaviour {
 	functionManager SS;
 	turnManager tManager;
 	player myPlayer;
-	GameObject buildButton;
+	[SerializeField] GameObject buildButton;
 
 	bool myPlayerIsSet;
 
@@ -33,8 +33,6 @@ public class inputManager : MonoBehaviour {
 
 		targetLine = GetComponent <LineRenderer> ();
 		myPlayerIsSet = false;
-
-		buildButton = GameObject.Find("armoryOn");
 
 		// Only temporary
 		commandable = false;
