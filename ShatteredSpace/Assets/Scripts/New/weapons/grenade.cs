@@ -11,7 +11,7 @@ public class grenade : weapon {
 	public int maxBombs;
 	static private int SPLASHDAMAGE = 2;
 	
-	public grenade():base("Grenade","Has splash damage of 2",4,4,-1,1
+	public grenade():base("Grenade","explosive","Has splash damage of 2",4,4,-1,1
 	                      // -1 stands for delay until end of turn but actually we'll never use it
 	                      // We can't even say if time==-1 because that's when turn actually end
 	                      // We are looking for a time when players stop moving but turn hasn't really ended
@@ -44,9 +44,12 @@ public class grenade : weapon {
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = this.getDamage();
 		newDamage.attacker = this.getMaster();
+		newDamage.weaponFired = this;
+		newDamage.type = "direct";
 		// Creating the central damage
 		bManager.bomb (pos,newDamage);
 		// Creating the splatter damage
+		newDamage.type = "splash";
 		newDamage.damageAmount = SPLASHDAMAGE;
 		for (int i=0; i<6; i++) {
 			newDamage.push=SS.direction[i];

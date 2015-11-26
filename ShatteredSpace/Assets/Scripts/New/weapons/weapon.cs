@@ -12,9 +12,12 @@ public class weapon : MonoBehaviour
 	int range;
 	int delay;	// The number of steps damage is generated after the weapon fired
 	player master; // The player that the weapon belong to...
+	string technology;
 	string weaponName; 
 	string description; 
 	int fireTime; 
+
+	int playerExpGain = 2;
 
 	int shotsPlanned;
 	int numOfShots;	// Maximum time you can fire this weapon
@@ -23,11 +26,12 @@ public class weapon : MonoBehaviour
 	Vector2 targetPosition;
 	/*Note: intentionally did not include too many required fields in the abstract class. Can add more later if necessary */ 
 	
-	public weapon(string name, string description,
+	public weapon(string name, string technology, string description,
 		int damage, int range, int delay, int shots) /* initiates a basic weapon object. Can override in a 
                                                                                     subclass to construct a weapon with more fields */                                        
 	{
 		this.weaponName = name;
+		this.technology = technology;
 		this.description = description;
 		this.damage = damage;
 		this.range = range;
@@ -62,16 +66,22 @@ public class weapon : MonoBehaviour
 		// The turn has started, so reset for the next turn
 		setShotsPlanned(0);
 	}
-	
+
 	public void generateDamage(){
 		print ("generate damage!");
 		damageInfo newDamage = new damageInfo();
 		newDamage.damageAmount = damage;
 		newDamage.attacker = master;
+		newDamage.weaponFired = this;
+		newDamage.type = "direct";
 		bool hit = bManager.bomb (targetPosition,newDamage);
 		// Since the damage is generated, the weapon can take a rest
 		fired = false;
 		master.weaponHit ();
+	}
+
+	public void hitPlayer(string damageType){
+		master.gainExp(technology,playerExpGain);
 	}
 	
 	public int getFireTime()
@@ -137,6 +147,10 @@ public class weapon : MonoBehaviour
 
 	public bool hasFired(){
 		return fired;
+	}
+
+	public string getTechnology(){
+		return technology;
 	}
 
 	// Default weapons are not passive

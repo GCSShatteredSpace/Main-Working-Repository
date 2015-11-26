@@ -21,10 +21,11 @@ public class turret : MonoBehaviour {
 	public damageInfo getDamage(){
 		damageInfo d = new damageInfo ();
 		d.damageAmount = database.turretDamage;
+		d.isTurretDamage = true;
 		return d;
 	}
-	public void takeDamage(damageInfo damage){
-		energy -= damage.damageAmount;
+	public void takeDamage(int amount){
+		energy -= amount;
 		if (energy <= 0)
 			destroyTurret ();
 	}
@@ -36,6 +37,10 @@ public class turret : MonoBehaviour {
 	void destroyTurret(){
 		Destroy(this.gameObject);
 		bManager.destroyTurret (turretPos);
+	}
+
+	public int getEnergy(){
+		return energy;
 	}
 
 }

@@ -269,7 +269,7 @@ public class boardManager : MonoBehaviour {
 
         // If damage is applied to a turret
 		if (board [pos [0], pos [1]].turretIsActivated ()) {
-			board [pos [0], pos [1]].getTurret().takeDamage(damage);
+			damage.applyToTurret(board [pos [0], pos [1]].getTurret());
 			hit = true;
 		}
         // If damage is applied to a player

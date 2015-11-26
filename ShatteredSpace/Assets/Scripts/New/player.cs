@@ -29,6 +29,8 @@ public class player : MonoBehaviour {
 	[SerializeField] Vector2 playerPosition;
 	int energy;
 	Dictionary<string, int> exp = new Dictionary<string, int>();
+	Dictionary<string, bool> hasTech = new Dictionary<string, bool>();	
+	Dictionary<string, GameObject> techPanel = new Dictionary<string, GameObject>();	
 	int time;
 	int turn;
 	
@@ -46,10 +48,12 @@ public class player : MonoBehaviour {
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
 	
 	void Awake () {
+		print ("Awake!");
 		initPlayer ();
 	}
 	
 	void initPlayer(){
+		print (exp.Keys.Count);
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
 		GameObject gameController = GameObject.Find ("gameController");
@@ -61,10 +65,20 @@ public class player : MonoBehaviour {
 		myPlayer = this.gameObject;
 		
 		energy = database.playerStartEnergy;
-		exp.Add("Momentum",0);
-		exp.Add("Explosive",0);
-		exp.Add("Particle",0);
-		exp.Add("Field",0);
+		exp.Add("momentum",0);
+		exp.Add("explosive",0);
+		exp.Add("particle",0);
+		exp.Add("field",0);
+
+		hasTech.Add("momentum",true);
+		hasTech.Add("explosive",false);
+		hasTech.Add("particle",false);
+		hasTech.Add("field",false);	
+
+		techPanel.Add("momentum",GameObject.Find("momentumPanel"));
+		techPanel.Add("explosive",GameObject.Find("explosivePanel"));
+		techPanel.Add("particle",GameObject.Find("particlePanel"));
+		techPanel.Add("field",GameObject.Find("fieldPanel"));
 		
 		time = -1;
 		turn = 0;
@@ -116,6 +130,7 @@ public class player : MonoBehaviour {
 
 		if (tManager.getTurn()==turn) return;
 		if (tManager.getTime()==time) return;
+
 		// Everything happens in between!
 		//print ("Player Time = " + time.ToString ());
 		// If we don't syncronize time first, weapons will be fired one step early
@@ -262,13 +277,35 @@ public class player : MonoBehaviour {
 	[PunRPC]
 	void networkGainExp(string technology, int amount){
 		exp[technology] += amount;
+
 		SendNetworkMessage (PhotonNetwork.player.name + " gained " + amount.ToString() + " exp!");
-		SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " exp!");
-		if (exp[technology] >= database.upgradeExp) showNewUpgrades();
+		//SendNetworkMessage (PhotonNetwork.player.name + " has " + energy.ToString() + " exp!");
+		if (photonView.isMine) {
+			if (exp [technology] >= database.upgradeExp) {
+				showNewUpgrades ();
+				exp [technology] %= database.upgradeExp;
+			}
+			Slider display = techPanel[technology].GetComponentInChildren<Slider>();
+			display.value = exp[technology];
+		}else{
+			exp [technology] %= database.upgradeExp;
+		}
 	}
 
 	void showNewUpgrades(){
 		
+	}
+
+	// TODO:This should be a network thing
+	void gainTechnology(string technology){
+		hasTech [technology] = true;
+		GameObject panel = techPanel[technology];
+		Text techText = panel.GetComponentInChildren<Text>();
+		Color temp = techText.color;
+		temp.a = 255f;
+		techText.color = temp;
+		expPanel display = panel.GetComponent<expPanel> ();
+		display.showDisplay();
 	}
 	
 	void die(){
@@ -290,7 +327,7 @@ public class player : MonoBehaviour {
 	void addPlayer(int id, Vector2 startPos){
 		player p = (PhotonView.Find(id).gameObject.GetComponent<player>());
 		p.setPosition (startPos);
-		initPlayer ();
+		//initPlayer ();
 		tManager.addPlayer (p);
 	}
 
