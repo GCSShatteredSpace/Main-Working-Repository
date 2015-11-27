@@ -71,7 +71,7 @@ public class player : MonoBehaviour {
 		exp.Add("field",0);
 
 		hasTech.Add("momentum",true);
-		hasTech.Add("explosive",false);
+		hasTech.Add("explosive",true);
 		hasTech.Add("particle",false);
 		hasTech.Add("field",false);	
 
@@ -285,7 +285,7 @@ public class player : MonoBehaviour {
 				showNewUpgrades ();
 				exp [technology] %= database.upgradeExp;
 			}
-			Slider display = techPanel[technology].GetComponentInChildren<Slider>();
+			Slider display = techPanel[technology].GetComponent<expPanel>().getSlider();
 			display.value = exp[technology];
 		}else{
 			exp [technology] %= database.upgradeExp;
@@ -297,7 +297,7 @@ public class player : MonoBehaviour {
 	}
 
 	// TODO:This should be a network thing
-	void gainTechnology(string technology){
+	public void gainTechnology(string technology){
 		hasTech [technology] = true;
 		GameObject panel = techPanel[technology];
 		Text techText = panel.GetComponentInChildren<Text>();

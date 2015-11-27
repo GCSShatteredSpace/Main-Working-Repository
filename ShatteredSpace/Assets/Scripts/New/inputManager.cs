@@ -180,6 +180,10 @@ public class inputManager : MonoBehaviour {
 		targetLine.SetPosition (1, SS.hexPositionTransform(targetEnd)+Vector3.back);
 	}
 
+	public void gainTechnology(string technology){
+		myPlayer.gainTechnology (technology);
+	}
+
 	// A bunch of "get" functions
 
 	public bool isInTargetMode(){
