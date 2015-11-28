@@ -13,12 +13,24 @@ public class damageInfo : MonoBehaviour {
     const int exp = 1;
 
 	public void applyToPlayer(player p){
-		p.takeDamage(damageAmount);
-        if (push!= Vector2.zero){
-            p.addMomentum(push);
-        }
-		if (!isTurretDamage) {
-			weaponFired.hitPlayer (type, p);
+		bool blocked = false;
+		if (p.defensiveWeapon != null && !isTurretDamage) {
+			print ("Defensive weapon detected!");
+			blocked = p.defensiveWeapon.blockDamage(damageAmount,weaponFired);
+		}
+		if (!blocked) {
+			p.takeDamage (damageAmount);
+			if (push != Vector2.zero) {
+				p.addMomentum (push);
+			}
+			if (!isTurretDamage) {
+				weaponFired.hitPlayer (type, p);
+			}
+		} else {
+			// The defensive weapon will take care of dealing damage itself
+			if (!isTurretDamage) {
+				weaponFired.hitPlayerBlocked (type, p);
+			}
 		}
 	}
 

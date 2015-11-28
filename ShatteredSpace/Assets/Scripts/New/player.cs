@@ -39,6 +39,7 @@ public class player : MonoBehaviour {
 
 	// Weapon stuff
 	weapon currWeapon;
+	public weapon defensiveWeapon;
 	
 	List<weapon> weapons = new List<weapon> ();
 	List<int> weaponList = new List<int>();
@@ -111,6 +112,7 @@ public class player : MonoBehaviour {
 			// The other player gets a different database for its set of weapons (they are different instances)
 			database = Instantiate(database);
 			playerMenu = GameObject.Find("oppoentWeaponMenu").GetComponent<playerWpnMenu>();
+			playerMenu.setMyPlayer(this);
 			GameObject.Find ("player2Energy").GetComponent<Text>().text = PhotonNetwork.otherPlayers[0].name + ": " + 
 								this.energy.ToString();
 		}
@@ -138,6 +140,12 @@ public class player : MonoBehaviour {
 		if (time == 0){
 			if (currWeapon.isPassive() && currWeapon.readyToFire()){
 				currWeapon.fireWeapon(Vector2.zero,time);
+			}
+			// Temporary!!
+			if (currWeapon.isDefeniveWeapon() && currWeapon.readyToFire()){
+				defensiveWeapon = currWeapon;
+			}else{
+				defensiveWeapon = null;
 			}
 			//printMovement();
 		}

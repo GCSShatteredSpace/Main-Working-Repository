@@ -100,7 +100,7 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void resetTurn(){
-		print ("Turn reset!");
+//		print ("Turn reset!");
 		endCurrentStep ();
 		readyPlayers = 0;
 		for (int i = 0; i < players.Count; i++) {
@@ -200,7 +200,7 @@ public class turnManager : MonoBehaviour {
 	}
 	
 	void calculateStepSequence(){
-		print ("Calculate step sequence!");
+//		print ("Calculate step sequence!");
 		List<Vector2>[] velocitySequences= new List<Vector2>[2];
 		Vector2[] positions = new Vector2[2];
 		Vector2[] newPos = new Vector2[2];

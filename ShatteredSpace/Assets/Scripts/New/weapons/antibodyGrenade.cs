@@ -55,4 +55,9 @@ public class antibodyGrenade : weapon {
 	public override void directHit(player p){
 		p.freezeMovement ();
 	}
+
+	public override int getSplashDamage ()
+	{
+		return SPLASHDAMAGE;
+	}
 }

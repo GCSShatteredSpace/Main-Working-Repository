@@ -3,11 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class plasmaCutter : weapon
-{
-    static private int DAMAGE = 10;
-    static private int RANGE = 2;
-    static private int DELAY = 0;
-    
+{   
     bool weaponOn = false;
     int weaponHit = 0;
     int time;

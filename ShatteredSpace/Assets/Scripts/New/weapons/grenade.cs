@@ -60,6 +60,9 @@ public class grenade : weapon {
 		this.getMaster().weaponHit ();
 	}
 
+	public override int getSplashDamage ()
+	{
+		return SPLASHDAMAGE;
+	}
 
-	
 }

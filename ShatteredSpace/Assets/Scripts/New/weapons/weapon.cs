@@ -21,21 +21,24 @@ public class weapon : MonoBehaviour
 	int fireTime; 
 	public bool overheated = false;
 	bool hasOverheat;
-	int overheatCapacity = 1;
+	public int overheatCapacity = 1;
+	bool isDefensive;
 
 	int playerExpGain = 2;
+	int reducedPlayerExpGain = 1;	// This happens when the oppoent blocked the attack
 
 	int shotsPlanned;
 	int numOfShots;	// Maximum time you can fire this weapon
 	
 	public bool fired;
 	public bool firedInTurn;
-	int fireCount;
+	public int fireCount;
 	Vector2 targetPosition;
 
 	
 	public weapon(string name, string technology, string description,
-		int damage, int range, int delay, int shots = 1, bool hasOverheat = false) /* initiates a basic weapon object. Can override in a 
+		int damage, int range, int delay, int shots = 1, 
+	    bool hasOverheat = false, bool isDefensive = false) /* initiates a basic weapon object. Can override in a 
                                                                                     subclass to construct a weapon with more fields */                                        
 	{
 		this.weaponName = name;
@@ -46,6 +49,7 @@ public class weapon : MonoBehaviour
 		this.delay = delay;
 		this.numOfShots = shots;
 		this.hasOverheat = hasOverheat;
+		this.isDefensive = isDefensive;
 	}
 	
 	void Awake(){
@@ -104,11 +108,15 @@ public class weapon : MonoBehaviour
 		master.weaponHit ();
 	}
 
-	public void hitPlayer(string damageType, player p){
+	public virtual void hitPlayer(string damageType, player p){
 		master.gainExp(technology,playerExpGain);
 		directHit (p);
 	}
-	
+
+	public virtual void hitPlayerBlocked(string damageType, player p){
+		master.gainExp(technology,reducedPlayerExpGain);
+	}
+
 	public int getFireTime()
 	{
 		return this.fireTime;
@@ -186,6 +194,18 @@ public class weapon : MonoBehaviour
 
 	public virtual void directHit(player p){
 		return;
+	}
+
+	public virtual int getSplashDamage(){
+		return 0;
+	}
+
+	public virtual bool blockDamage(int amount, weapon source){
+		return false;
+	}
+
+	public bool isDefeniveWeapon(){
+		return isDefensive;
 	}
 
 	public void setTargetPos(Vector2 newPos){
