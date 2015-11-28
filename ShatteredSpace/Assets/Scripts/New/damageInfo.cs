@@ -18,7 +18,7 @@ public class damageInfo : MonoBehaviour {
             p.addMomentum(push);
         }
 		if (!isTurretDamage) {
-			weaponFired.hitPlayer (type);
+			weaponFired.hitPlayer (type, p);
 		}
 	}
 

@@ -6,6 +6,7 @@ public class inputManager : MonoBehaviour {
 
 	functionManager SS;
 	turnManager tManager;
+	statsManager database;
 	player myPlayer;
 	[SerializeField] GameObject buildButton;
 
@@ -24,12 +25,15 @@ public class inputManager : MonoBehaviour {
 	int currentWeapon;
 	bool commandable;
 	int maxSteps;
-	
+
+	bool freezedTurn = false;
+
 	void Start () { 
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
 		tManager = GetComponent<turnManager> ();
 		SS = GetComponent<functionManager> ();
+		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 
 		targetLine = GetComponent <LineRenderer> ();
 		myPlayerIsSet = false;
@@ -37,7 +41,7 @@ public class inputManager : MonoBehaviour {
 		// Only temporary
 		commandable = false;
 		buildButton.SetActive (false);
-		maxSteps = 10;
+		maxSteps = database.maxSteps;
 		// Only temporary
 	}
 
@@ -55,27 +59,42 @@ public class inputManager : MonoBehaviour {
 		}
 	}
 
-	public void startNewTurn(Vector2 pos){  // Reset after each turn
+	public void resetCommands(Vector2 pos){
 		playerPosition = pos;
 		firePosition = playerPosition;
 		moveIndex = 0;
 		
 		commands.Clear ();
-
+		
 		action newAction = new action();
 		newAction.movement = playerPosition;
 		newAction.attack = noAttack;
 		newAction.weaponId = 0;
-
+		
 		commands.Push (newAction);
-
+		
 		targetEnd = noAttack;
 		targetStart = playerPosition;
 		targetLine.enabled = false;
 		commandable = true;
 
-		buildButton.SetActive (true);
+		if (myPlayerIsSet) myPlayer.getWeapon ().setShotsPlanned (0);
+	}
 
+	public void startNewTurn(Vector2 pos){  // Reset after each turn
+		resetCommands (pos);
+
+		buildButton.SetActive (true);
+		maxSteps = database.maxSteps;
+		// Antibody grenade
+		if (freezedTurn) {
+			freezedTurn = false;
+			myPlayer.isFreezed = false;
+		}
+		if (myPlayer.isFreezed) {
+			maxSteps = 0;
+			freezedTurn = true;
+		}
 	}
 
 	public void moveCommand(Vector2 pos) {	// Add a movement step
@@ -184,6 +203,12 @@ public class inputManager : MonoBehaviour {
 		myPlayer.gainTechnology (technology);
 	}
 
+	// This temporarily sets the maxsteps in one turn
+	// Can be used by recoil upgrade, antibody grenade and 
+	public void setMaxSteps(int steps){
+		maxSteps = steps;
+	}
+	
 	// A bunch of "get" functions
 
 	public bool isInTargetMode(){

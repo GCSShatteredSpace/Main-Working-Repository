@@ -46,14 +46,13 @@ public class player : MonoBehaviour {
 	
 	// Special stuff
 	Vector2 momentum = Vector2.zero;	// This is the momentum caused by explosions
+	public bool isFreezed = false;
 	
 	void Awake () {
-		print ("Awake!");
 		initPlayer ();
 	}
 	
 	void initPlayer(){
-		print (exp.Keys.Count);
 		// This part is necessary for any spawned prefab
 		// This will change to "gameController(Clone)" if we decide to instantiate the gameController
 		GameObject gameController = GameObject.Find ("gameController");
@@ -384,6 +383,7 @@ public class player : MonoBehaviour {
 	// Weapon stuff
 	// -------------
 
+	// TODO: make the players fire multiple weapons in same turn
 	public void setWeapon(int weaponIndex){
 		photonView.RPC ("networkSetWeapon", PhotonTargets.AllBuffered, weaponIndex);
 	}
@@ -394,7 +394,10 @@ public class player : MonoBehaviour {
 		for (i = 0; i < weaponList.Count; i++){
 			if (weaponList[i] == weaponIndex){
 				// Player doesn't store weapons in the order of weapon index
-				currWeapon = weapons [i];
+				if (currWeapon != weapons [i]){
+					currWeapon = weapons [i];
+					if (photonView.isMine) iManager.resetCommands(playerPosition);
+				}
 				return;
 			}
 		}
@@ -427,7 +430,14 @@ public class player : MonoBehaviour {
 	void getTrapped(){}
 
 	// Stunned by antibody grenade
-	void stun(){}
+	public void freezeMovement(){
+		if (photonView.isMine) {
+			if (!isFreezed) {
+				isFreezed = true;
+				print ("I'm freezed!");
+			}
+		}
+	}
 
 	// Instantly move to another position
 	void teleport(){}
@@ -436,9 +446,10 @@ public class player : MonoBehaviour {
 	// Get-set functions
 	// -------------------
 
-	public weapon getWeapon(){
-		// This is just temporary
-		return currWeapon;
+	public weapon getWeapon(int wpnID = -1){
+		if (wpnID == -1)
+			return currWeapon;
+		else return weapons [weaponList.IndexOf (wpnID)];
 	}
 	
 	public Vector2 getPosition(){

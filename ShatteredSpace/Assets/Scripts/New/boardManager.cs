@@ -265,7 +265,7 @@ public class boardManager : MonoBehaviour {
 		bool hit = false;
 		List<int> pos = vecToBoard (position);
 		//print ("bomb!");
-		print ("Bomb:" + (new Vector2(pos[0],pos[1])).ToString());
+		//print ("Bomb:" + (new Vector2(pos[0],pos[1])).ToString());
 
         // If damage is applied to a turret
 		if (board [pos [0], pos [1]].turretIsActivated ()) {
@@ -278,7 +278,7 @@ public class boardManager : MonoBehaviour {
 			hit = true;
 		}
 		board [pos[0], pos[1]].addDamage (damage);
-        anim.explode( position, Quaternion.identity);
+        anim.explode(position, Quaternion.identity);
 		return hit;
 	}
 
