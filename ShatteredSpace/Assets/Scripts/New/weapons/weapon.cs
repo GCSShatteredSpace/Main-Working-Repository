@@ -6,6 +6,7 @@ public class weapon : MonoBehaviour
 	public turnManager tManager;
 	public boardManager bManager;
 	public functionManager SS;
+	public Vector3 projOffset = new Vector3 (0,0,-0.5f);
 	
 	// There is a protection level thing that I don't know how to sort out
 	int damage;
@@ -16,6 +17,7 @@ public class weapon : MonoBehaviour
 	string weaponName; 
 	string description; 
 	int fireTime; 
+	public Projectile proj;
 
 	int playerExpGain = 2;
 
@@ -74,10 +76,16 @@ public class weapon : MonoBehaviour
 		newDamage.attacker = master;
 		newDamage.weaponFired = this;
 		newDamage.type = "direct";
-		bool hit = bManager.bomb (targetPosition,newDamage);
+		bool hit = bManager.bomb (targetPosition, newDamage);
 		// Since the damage is generated, the weapon can take a rest
 		fired = false;
 		master.weaponHit ();
+		projEnd ();
+	}
+
+	public virtual void projEnd()
+	{
+		if(this.proj!=null) GameObject.Destroy(proj.gameObject);
 	}
 
 	public void hitPlayer(string damageType){

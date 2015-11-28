@@ -19,7 +19,6 @@ public class boardManager : MonoBehaviour {
 
     [SerializeField] statsManager dataBase;
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
-    [SerializeField] AnimationController anim;
     [SerializeField] turnManager  turn;
     [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
     [SerializeField] int[] turretSpawnTimers = new int[5];
@@ -29,6 +28,7 @@ public class boardManager : MonoBehaviour {
 	[SerializeField] GameObject turretGameObj;
 	[SerializeField] GameObject blastShieldGameObj;
     [SerializeField] GameObject energy;
+	[SerializeField] List<GameObject> explosions=new List<GameObject>();
 
     tile[,] board;
 
@@ -41,8 +41,22 @@ public class boardManager : MonoBehaviour {
 		generateMapObjects();
     }
 
+	public void addExplosion(GameObject expl, Vector3 position)
+	{
+		GameObject explosionInstance=Instantiate(expl, position, Quaternion.identity) as GameObject;
+		explosions.Add (explosionInstance);
+	}
+
     void Update()
     {
+		for(int i = 0; i < explosions.Count; i++)
+		{
+			if(explosions[i].GetComponent<ParticleSystem>().isStopped && !explosions[i].GetComponent<ParticleSystem>().IsAlive())
+			{
+				Destroy(explosions[i]);
+				explosions.RemoveAt(i);
+			}
+		}
         if (turn.getTime() == time) return;
 		// Time/step based events
 		time = turn.getTime();
@@ -56,6 +70,7 @@ public class boardManager : MonoBehaviour {
 				GameObject.Destroy(myTile.getEnergy());
 			}
 		}
+
 		// Turn-based events
 		if (turn.getTurn() == tn) return;
 		for (int i = 0; i < turretSpawnPoint.Length-1; i++)
@@ -64,6 +79,12 @@ public class boardManager : MonoBehaviour {
 			// And that crashes the game, as you might have expected
 			if (turretSpawnTimers[i] >= dataBase.turretRespawnTime && !occupiedByPlayer(turretSpawnPoint[i]))
 			{
+				List<int> temp = vecToBoard(turretSpawnPoint[i]);
+				tile myTile = board[temp[0], temp[1]];
+				if (myTile.hasEnergy()) {
+					myTile.setEnergy(false);
+					GameObject.Destroy(myTile.getEnergy());
+				}
 				spawnTurret(turretSpawnPoint[i]);
 				turretSpawnTimers[i] = 0;
 			}
@@ -146,9 +167,9 @@ public class boardManager : MonoBehaviour {
         myTile.activateTurret (false);
         myTile.setEnergy(true);
         Vector3 spawnPosition = SS.hexPositionTransform(pos);
-        GameObject instance = Instantiate(energy, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
-        myTile.setEnergy(true);		// wow
-        myTile.setEnergy(instance);	// so rigor
+		GameObject instance = Instantiate (energy, spawnPosition, Quaternion.LookRotation (Vector3.up)) as GameObject;
+		myTile.setEnergy (true);		// wow
+		myTile.setEnergy (instance);	// so rigor
         int spawnIndex=0;
         while (turretSpawnPoint[spawnIndex] != pos) spawnIndex++;
         turretSpawnTimers[spawnIndex] = 1;
@@ -278,7 +299,7 @@ public class boardManager : MonoBehaviour {
 			hit = true;
 		}
 		board [pos[0], pos[1]].addDamage (damage);
-        anim.explode( position, Quaternion.identity);
+		//add explosion
 		return hit;
 	}
 
