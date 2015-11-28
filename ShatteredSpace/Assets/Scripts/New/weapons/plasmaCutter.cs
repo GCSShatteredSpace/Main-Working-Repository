@@ -6,9 +6,8 @@ public class plasmaCutter : weapon
 {
     static private int DAMAGE = 10;
     static private int RANGE = 2;
-    static private int DELAY = 1;
+    static private int DELAY = 0;
     
-    bool overheat = false;
     bool weaponOn = false;
     int weaponHit = 0;
     int time;
@@ -45,7 +44,7 @@ public class plasmaCutter : weapon
                 if (tManager.getTime () == -1){
                     // End of current turn!
                     weaponOn = false;
-                    overheat = (weaponHit>=overheatCapacity);
+                    this.overheated = (weaponHit >= overheatCapacity);
                     weaponHit = 0;
                 } else if (weaponOn){
                     generateDamage();
@@ -68,6 +67,7 @@ public class plasmaCutter : weapon
         damageInfo newDamage = new damageInfo();   /// have a special mine damageinfo, with callback to signal if it hit??
         newDamage.damageAmount = this.getDamage();
         newDamage.attacker = this.getMaster();
+		newDamage.weaponFired = this;
         bool hit = false;
 
         Vector2 pos = this.getMaster().getPosition();
@@ -83,8 +83,9 @@ public class plasmaCutter : weapon
         }
     }
 
-    public override bool readyToFire(){
-        return !overheat;
-    }
+	public override bool readyToFire ()
+	{
+		return !overheated;
+	}
     
 }

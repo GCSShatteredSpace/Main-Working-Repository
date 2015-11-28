@@ -8,7 +8,7 @@ public class grenade : weapon {
 	// Upgrades: Increased range, magnetic grenade, multiple grenades
 	
 	public List<Vector2> bombPos = new List<Vector2> ();
-	public int maxBombs;
+	public int maxBombs = 1;
 	static private int SPLASHDAMAGE = 2;
 	
 	public grenade():base("Grenade","explosive","Has splash damage of 2",4,4,-1,1
@@ -16,7 +16,6 @@ public class grenade : weapon {
 	                      // We can't even say if time==-1 because that's when turn actually end
 	                      // We are looking for a time when players stop moving but turn hasn't really ended
 	                      ){ 
-		maxBombs = 1;
 	}
 
 	void Update(){

@@ -7,7 +7,11 @@ public class weapon : MonoBehaviour
 	public boardManager bManager;
 	public functionManager SS;
 	public Vector3 projOffset = new Vector3 (0,0,-0.5f);
-	
+
+
+	int turn;
+	int time;
+
 	// There is a protection level thing that I don't know how to sort out
 	int damage;
 	int range;
@@ -17,19 +21,27 @@ public class weapon : MonoBehaviour
 	string weaponName; 
 	string description; 
 	int fireTime; 
+
 	public Projectile proj;
+
+	public bool overheated = false;
+	bool hasOverheat;
+	int overheatCapacity = 1;
+
 
 	int playerExpGain = 2;
 
 	int shotsPlanned;
 	int numOfShots;	// Maximum time you can fire this weapon
 	
-	bool fired;
+	public bool fired;
+	public bool firedInTurn;
+	int fireCount;
 	Vector2 targetPosition;
-	/*Note: intentionally did not include too many required fields in the abstract class. Can add more later if necessary */ 
+
 	
 	public weapon(string name, string technology, string description,
-		int damage, int range, int delay, int shots) /* initiates a basic weapon object. Can override in a 
+		int damage, int range, int delay, int shots = 1, bool hasOverheat = false) /* initiates a basic weapon object. Can override in a 
                                                                                     subclass to construct a weapon with more fields */                                        
 	{
 		this.weaponName = name;
@@ -39,6 +51,7 @@ public class weapon : MonoBehaviour
 		this.range = range;
 		this.delay = delay;
 		this.numOfShots = shots;
+		this.hasOverheat = hasOverheat;
 	}
 	
 	void Awake(){
@@ -56,13 +69,28 @@ public class weapon : MonoBehaviour
 			print ("FireTime = "+fireTime.ToString());
 			generateDamage();
 		}
+		if (tManager.getTurn () != turn){
+			if (tManager.getTime () != time){
+				if (tManager.getTime () == -1){
+					// End of current turn!
+					if (!firedInTurn){
+						fireCount = 0;
+					}
+					this.overheated = (hasOverheat && (fireCount >= overheatCapacity));
+					firedInTurn = false;
+				}
+				time = tManager.getTime();
+			}
+		}
 	}
 	
 	public virtual void fireWeapon(Vector2 pos,int time){
 		print ("Weapon fired!");
 		fired = true;
+		firedInTurn = true;
+		fireCount += 1;
 		// Cause damage is generated at the end of current step
-		fireTime = time+delay;
+		fireTime = time + delay;
 		targetPosition = pos;
 
 		// The turn has started, so reset for the next turn
@@ -72,7 +100,7 @@ public class weapon : MonoBehaviour
 	public void generateDamage(){
 		print ("generate damage!");
 		damageInfo newDamage = new damageInfo();
-		newDamage.damageAmount = damage;
+		newDamage.damageAmount = getDamage();
 		newDamage.attacker = master;
 		newDamage.weaponFired = this;
 		newDamage.type = "direct";
@@ -88,16 +116,18 @@ public class weapon : MonoBehaviour
 		if(this.proj!=null) GameObject.Destroy(proj.gameObject);
 	}
 
-	public void hitPlayer(string damageType){
+	public void hitPlayer(string damageType, player p){
 		master.gainExp(technology,playerExpGain);
+		directHit (p);
 	}
 	
 	public int getFireTime()
 	{
 		return this.fireTime;
 	}
-	
-	public int getDamage()
+
+	// This can be modified for random damage, upgraded damage, etc.
+	public virtual int getDamage()
 	{
 		return this.damage; 
 	}
@@ -110,7 +140,7 @@ public class weapon : MonoBehaviour
 
 	// Can be overrided by weapons with overheat
 	public virtual bool readyToFire(){
-		return numOfShots > shotsPlanned;
+		return numOfShots > shotsPlanned && !overheated;
 	}
 
 	public void planToFire(){
@@ -164,6 +194,10 @@ public class weapon : MonoBehaviour
 	// Default weapons are not passive
 	public virtual bool isPassive(){
 		return false;
+	}
+
+	public virtual void directHit(player p){
+		return;
 	}
 
 	public void setTargetPos(Vector2 newPos){

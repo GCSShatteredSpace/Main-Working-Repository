@@ -3,9 +3,9 @@ Game enters infinite loop (turn never ends) when players press space for too man
 #Fixed:Collision with turrets still creates discrepency between clients.
 #Fixed:Mines can only be fired once in the game. (easy fix)
 At some angles the player can shoot in between barriers.
-If you change weapon when plannning your move the attack remains
+# Fixed:If you change weapon when plannning your move the attack remains
 Sometimes the players attack is out of sync. (Shots hit when they are not supposed to etc.)
 Explosion prefabs never go away.
 Clicking on menu items will also input command on the board which is annoying.
 No dangerous sign.
-After building minigun, every single weapon can be fired multiple times in one turn.
+# Fixed:After building minigun, every single weapon can be fired multiple times in one turn.

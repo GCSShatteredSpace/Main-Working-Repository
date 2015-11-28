@@ -39,6 +39,9 @@ public class playerWpnMenu : MonoBehaviour {
 		weaponIDs.Add (wpnID);
 		buttons.Add (button);
 		button.setWpnID (wpnID);
+
+		button.setMyPlayer(myPlayer);
+
 		if (!isOpponentMenu) {
 			button.reveal ();
 		}
