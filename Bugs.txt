@@ -9,3 +9,4 @@ Explosion prefabs never go away.
 Clicking on menu items will also input command on the board which is annoying.
 No dangerous sign.
 # Fixed:After building minigun, every single weapon can be fired multiple times in one turn.
+The push effect of grenade only works on the other client(Weird.)
