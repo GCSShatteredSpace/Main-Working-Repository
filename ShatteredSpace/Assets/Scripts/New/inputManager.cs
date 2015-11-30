@@ -135,7 +135,7 @@ public class inputManager : MonoBehaviour {
 			//print(commands.Count);
 			action lastAction = commands.Peek();
 			playerPosition = lastAction.movement;
-			firePosition = playerPosition-lastAction.extraMovement;
+			firePosition = playerPosition - lastAction.extraMovement;
 			// Set the target display
 			targetLine.enabled=false;
 			targetStart = firePosition;
@@ -157,13 +157,15 @@ public class inputManager : MonoBehaviour {
 		lastAction.movement = lastAction.movement - lastAction.extraMovement;
 		lastAction.extraMovement=Vector2.zero;
 		playerPosition = lastAction.movement;
+		if (lastAction.attack != noAttack) {
+			myPlayer.getWeapon ().cancelFire ();
+		}
 
-		lastAction.attack = new Vector2 (.5f, .5f);
+		lastAction.attack = noAttack;
 		lastAction.weaponId = 0;
 		commands.Push(lastAction);
 
 		targetLine.enabled = false;
-		myPlayer.getWeapon ().cancelFire ();
 
 	}
 
@@ -242,5 +244,14 @@ public class inputManager : MonoBehaviour {
 
 	public Vector2 getPlayerPosition(){
 		return playerPosition;
+	}
+
+	// Interaction with menus
+	public void setMenu(bool value){
+		if (value){
+			commandable = false;
+		}else{
+			commandable = true;
+		}
 	}
 }

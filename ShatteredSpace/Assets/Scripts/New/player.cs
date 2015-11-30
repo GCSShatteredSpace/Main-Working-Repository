@@ -38,7 +38,7 @@ public class player : MonoBehaviour {
 	[SerializeField] float speed;
 
 	// Weapon stuff
-	weapon currWeapon;
+	weapon currWeapon = null;
 	public weapon defensiveWeapon;
 	
 	List<weapon> weapons = new List<weapon> ();
@@ -403,6 +403,7 @@ public class player : MonoBehaviour {
 			if (weaponList[i] == weaponIndex){
 				// Player doesn't store weapons in the order of weapon index
 				if (currWeapon != weapons [i]){
+					if (currWeapon != null){currWeapon.setShotsPlanned(0);}
 					currWeapon = weapons [i];
 					if (photonView.isMine) iManager.resetCommands(playerPosition);
 				}

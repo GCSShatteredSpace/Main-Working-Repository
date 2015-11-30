@@ -9,10 +9,6 @@ public class deflectorShield : weapon {
 		"to all damage less or equal to " + maxDamage.ToString(),0,0,0,isDefensive: true){
 	}
 
-	void Update(){
-		print (this.isDefeniveWeapon());
-	}
-
 	public override bool blockDamage(int amount, weapon source){
 		bool blocked = amount <= maxDamage;
 		if (blocked) {

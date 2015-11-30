@@ -6,8 +6,8 @@ public class inputTile : MonoBehaviour {
 	Renderer rend;
 	[SerializeField] Texture2D warning;
 
-	float warningSize = 35f;
-	const int warningRatio = 60;
+	float warningSize = 32f;
+	const int warningRatio = 50;
 	const float vertOffset = 3f;
 
 	Vector2 playerPosition;
@@ -20,6 +20,7 @@ public class inputTile : MonoBehaviour {
 	bool isValidTarget;
 	bool hasDamage;
 	bool dangerous;
+	bool isBarrier;
 	[SerializeField] bool valid;
 
 	[SerializeField] Color mouseOverColor;
@@ -29,6 +30,7 @@ public class inputTile : MonoBehaviour {
 	[SerializeField] Color dangerColor;
 	[SerializeField] Color damageColor;
 	[SerializeField] Color jumpColor;
+	[SerializeField] Color barrierColor;
 	
 	[SerializeField] bool mouseOn;
 
@@ -111,11 +113,8 @@ public class inputTile : MonoBehaviour {
 	}
 	
 	void setState(){  // Sets the states of the current tile
-	  	if (SS.isNear(playerPosition, tilePosition) && iManager.hasMoveLeft()) {
-			valid = true;
-		} else {
-			valid = false;
-		}
+		isBarrier = bManager.isBarrierSpawnPoint (tilePosition);
+		valid = (SS.isNear (playerPosition, tilePosition) && iManager.hasMoveLeft ());
 		// Check if the tile is in movement path
 		if (tilePosition == playerPosition){  
 			current = true;
@@ -144,7 +143,7 @@ public class inputTile : MonoBehaviour {
 		// If the player chose to stay here, s/he is in trouble
 		if (current && bManager.isDangerous (tilePosition)) {
 			// Let's unenable it for now because it gets in the way of our awesome menu
-			//dangerous = true;
+			dangerous = true;
 		} else {
 			dangerous = false;
 		}
@@ -165,6 +164,8 @@ public class inputTile : MonoBehaviour {
 	
 	void setAppearance(){
 		clear ();
+		if (isBarrier)
+			setBarrier ();
 	  	if (inTarget && iManager.isCommandable ()) {
 			setTarget ();
 		}
@@ -188,6 +189,10 @@ public class inputTile : MonoBehaviour {
 
 	// The actual part where the appearance of tile is changed
 	// We can do something fancy here in the future
+
+	void setBarrier (){
+		rend.material.color = barrierColor;
+	}
 
 	void setTarget(){
 		rend.material.color = attackColor;
@@ -215,11 +220,11 @@ public class inputTile : MonoBehaviour {
 		}
 		if (dangerous) {
 			Vector3 center = SS.hexPositionTransform (tilePosition);
-			Rect bounds = new Rect (Screen.width/2 + center.x*warningRatio - warningSize / 2, 
-			                        Screen.height/2 - center.y*warningRatio - warningSize / 2 - vertOffset,
+			Rect bounds = new Rect (Screen.width/2 + center.x * warningRatio - warningSize / 2, 
+			                        Screen.height/2 - center.y * warningRatio - warningSize / 2 - vertOffset,
 			                        warningSize, warningSize);
 			//I get lots of errors if I leave this uncommented. Apparently warning is set to null
-			//GUI.DrawTexture (bounds, warning);
+			GUI.DrawTexture (bounds, warning);
 		}
 	}
 

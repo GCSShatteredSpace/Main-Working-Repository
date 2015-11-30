@@ -141,10 +141,12 @@ public class weapon : MonoBehaviour
 
 	public void planToFire(){
 		shotsPlanned += 1;
+		print ("ShotsPlanned: " + shotsPlanned.ToString());
 	}
 
 	public void cancelFire(){
 		shotsPlanned -= 1;
+		print ("ShotsPlanned: " + shotsPlanned.ToString());
 	}
 	
 	public float getDelay()
@@ -213,6 +215,7 @@ public class weapon : MonoBehaviour
 	}
 
 	public void setShotsPlanned(int num){
+		print ("ShotsPlannedSetTo " + num.ToString());
 		shotsPlanned = num;
 	}
 
