@@ -63,7 +63,11 @@ public class player : MonoBehaviour {
 		database = GameObject.Find ("stats").GetComponent<statsManager> ();
 		
 		myPlayer = this.gameObject;
-		
+		//Mesh currentMesh = myPlayer.GetComponent<MeshFilter> ().mesh;
+		//this.gameObject.GetComponent<MeshFilter> ().mesh = Resources.Load<Mesh>("baseModel"); 
+		//this.gameObject.GetComponent<MeshFilter>().mesh.Clear; 
+		//this.gameObject.AddComponent<MeshFilter> (); 
+		//this.gameObject.GetComponent<MeshFilter>().mesh = Resources.Load<Mesh> ("baseModel"); 
 		energy = database.playerStartEnergy;
 		exp.Add("momentum",0);
 		exp.Add("explosive",0);

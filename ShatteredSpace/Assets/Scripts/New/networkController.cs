@@ -90,7 +90,7 @@ public class networkController : MonoBehaviour {
 	void spawnPlayer(){
 		Vector2 spawnHex = spawnPoints [PhotonNetwork.playerList.Length - 1];
 		Vector2 spawnPosition = SS.hexPositionTransform(spawnHex);
-		thisPlayer = PhotonNetwork.Instantiate ("SSplayer", spawnPosition,Quaternion.identity,0);
+		thisPlayer = PhotonNetwork.Instantiate ("RealSSPlayer", spawnPosition,Quaternion.identity,0);
 		thisPlayer.GetComponent<player>().setPosition(spawnHex);
 		//Sets an absolute id for each player in terms of join order
 		if (PhotonNetwork.playerList.Length == 1) {

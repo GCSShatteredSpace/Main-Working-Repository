@@ -1,0 +1,191 @@
+fileFormatVersion: 2
+guid: 4c9ed29a1d302b44b83ef377754a03cc
+timeCreated: 1448572000
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: group
+    100002: //RootNode
+    100004: pasted__pSphere4
+    100006: pasted__pSphere5
+    100008: pPipe1
+    100010: pPipe2
+    100012: pPipe3
+    100014: pPipe4
+    100016: pPipe5
+    100018: pPipe8
+    100020: pTorus1
+    100022: pTorus2
+    100024: pTorus7
+    100026: pTorus8
+    400000: group
+    400002: //RootNode
+    400004: pasted__pSphere4
+    400006: pasted__pSphere5
+    400008: pPipe1
+    400010: pPipe2
+    400012: pPipe3
+    400014: pPipe4
+    400016: pPipe5
+    400018: pPipe8
+    400020: pTorus1
+    400022: pTorus2
+    400024: pTorus7
+    400026: pTorus8
+    2300000: pasted__pSphere4
+    2300002: pasted__pSphere5
+    2300004: pPipe1
+    2300006: pPipe2
+    2300008: pPipe3
+    2300010: pPipe4
+    2300012: pPipe5
+    2300014: pPipe8
+    2300016: pTorus1
+    2300018: pTorus2
+    2300020: pTorus7
+    2300022: pTorus8
+    3300000: pasted__pSphere4
+    3300002: pasted__pSphere5
+    3300004: pPipe1
+    3300006: pPipe2
+    3300008: pPipe3
+    3300010: pPipe4
+    3300012: pPipe5
+    3300014: pPipe8
+    3300016: pTorus1
+    3300018: pTorus2
+    3300020: pTorus7
+    3300022: pTorus8
+    4300000: pasted__pSphere4
+    4300002: pasted__pSphere5
+    4300004: pPipe1
+    4300006: pTorus1
+    4300008: pTorus2
+    4300010: pTorus7
+    4300012: pTorus8
+    4300014: pPipe2
+    4300016: pPipe3
+    4300018: pPipe4
+    4300020: pPipe5
+    4300022: pPipe8
+    7400000: idle
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: idle
+      takeName: Take 001
+      firstFrame: 1
+      lastFrame: 120
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: group
+        weight: 1
+      - path: group/pasted__pSphere4
+        weight: 1
+      - path: group/pasted__pSphere5
+        weight: 1
+      - path: pPipe1
+        weight: 1
+      - path: pPipe2
+        weight: 1
+      - path: pPipe3
+        weight: 1
+      - path: pPipe4
+        weight: 1
+      - path: pPipe5
+        weight: 1
+      - path: pPipe8
+        weight: 1
+      - path: pTorus1
+        weight: 1
+      - path: pTorus2
+        weight: 1
+      - path: pTorus7
+        weight: 1
+      - path: pTorus8
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
