@@ -207,7 +207,10 @@ public class player : MonoBehaviour {
 		finishedTurn = false;
 		momentum = Vector2.zero;
 	}
-	
+
+	public void printTurn(int i){
+		SendNetworkMessage("---- Turn " + i + " started----");
+	}
 	// Called by turn manager
 	public IEnumerator moveStep(List<Vector2> vSequence){
 		float time;
