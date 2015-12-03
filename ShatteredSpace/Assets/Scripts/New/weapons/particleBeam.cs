@@ -2,7 +2,11 @@
 using System.Collections;
 
 public class particleBeam : weapon { 
-	// Placeholder
-	public particleBeam():base("Particle Beam","Long range, low damage.",3,10,0,1){
+	public particleBeam():base("Particle Beam","particle","Long range, low random damage.",3,10,0,1,hasOverheat: true){
+	}
+
+	public override int getDamage ()
+	{
+		return Random.Range(0, base.getDamage ()) + 1;
 	}
 }

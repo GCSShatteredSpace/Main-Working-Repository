@@ -21,9 +21,10 @@ public class boardManager : MonoBehaviour {
     [SerializeField] functionManager SS;    // Just call it SS for sake of laziness
     [SerializeField] AnimationController anim;
     [SerializeField] turnManager  turn;
-    [SerializeField] Vector2[] turretSpawnPoint = new Vector2[5];
+    [SerializeField] List<Vector2> turretSpawnPoints;
     [SerializeField] int[] turretSpawnTimers = new int[5];
-    [SerializeField] Vector2[] barrierSpawnPoint = new Vector2[12]; // Barrier numbers may vary
+	List<blastShield> blastShields;
+    [SerializeField] List<Vector2> barrierSpawnPoints; // Barrier numbers may vary
 
 	[SerializeField] GameObject gameTile;
 	[SerializeField] GameObject turretGameObj;
@@ -36,41 +37,51 @@ public class boardManager : MonoBehaviour {
 	List<turret> turrets = new List<turret>();
 
     void Start(){
-        tileSize = dataBase.tileSize;
+		Invoke ("initialize", 0.1f);
+    }
+
+	void initialize(){
+		tileSize = dataBase.tileSize;
+		turretSpawnPoints = dataBase.turretSpawnPoints;
+		blastShields = dataBase.blastShields;
+		print ("Blast shields:" + blastShields.Count.ToString());
 		generateHexMap(dataBase.mapSize);
 		generateMapObjects();
-    }
+	}
 
     void Update()
     {
         if (turn.getTime() == time) return;
 		// Time/step based events
 		time = turn.getTime();
-        for (int i = 0; i < turretSpawnPoint.Length-1; i++)
+        for (int i = 0; i < turretSpawnPoints.Count-1; i++)
 		{
-            List<int> temp = vecToBoard(turretSpawnPoint[i]);
+            List<int> temp = vecToBoard(turretSpawnPoints[i]);
             tile myTile = board[temp[0], temp[1]];
-			if (myTile.hasEnergy() && occupiedByPlayer(turretSpawnPoint[i])) {
-				getPlayer(turretSpawnPoint[i]).takeDamage(-1 * dataBase.turretStartEnergy);
+			if (myTile.hasEnergy() && occupiedByPlayer(turretSpawnPoints[i])) {
+				getPlayer(turretSpawnPoints[i]).takeDamage(-1 * dataBase.turretStartEnergy);
 				myTile.setEnergy(false);
 				GameObject.Destroy(myTile.getEnergy());
 			}
 		}
 		// Turn-based events
 		if (turn.getTurn() == tn) return;
-		for (int i = 0; i < turretSpawnPoint.Length-1; i++)
+		for (int i = 0; i < turretSpawnPoints.Count-1; i++)
 		{
 			// Spawning a turret while a player's on the spot would cause infinite recursion
 			// And that crashes the game, as you might have expected
-			if (turretSpawnTimers[i] >= dataBase.turretRespawnTime && !occupiedByPlayer(turretSpawnPoint[i]))
+			if (turretSpawnTimers[i] >= dataBase.turretRespawnTime && !occupiedByPlayer(turretSpawnPoints[i]))
 			{
-				spawnTurret(turretSpawnPoint[i]);
+				spawnTurret(turretSpawnPoints[i]);
 				turretSpawnTimers[i] = 0;
 			}
 			else if (turretSpawnTimers[i] >= 1)
 			{
 				turretSpawnTimers[i]++;
 			}
+		}
+		foreach (blastShield b in blastShields) {
+			b.update();
 		}
 		// This makes sure that the event only happens once per turn
 		tn = turn.getTurn();
@@ -127,16 +138,19 @@ public class boardManager : MonoBehaviour {
 
 	void generateMapObjects(){
 		// Spawn turrets
-		foreach (Vector2 pos in turretSpawnPoint) {
+		foreach (Vector2 pos in turretSpawnPoints) {
             spawnTurret(pos);
         }
 		// Spawn balst shields
-		foreach (Vector2 pos in barrierSpawnPoint) {
-			Vector3 spawnPosition = SS.hexPositionTransform(pos);
-			List<int> temp = vecToBoard(pos);
-			int x=temp[0],y=temp[1];
-			board[x,y].activateWall(true);
-			GameObject instance = Instantiate(blastShieldGameObj,spawnPosition,Quaternion.identity) as GameObject;
+		foreach (blastShield bs in blastShields) {
+			print (bs.barrierPos.Count);
+			foreach(Vector2 pos in bs.barrierPos){
+				barrierSpawnPoints.Add(pos);
+				Vector3 spawnPosition = SS.hexPositionTransform(pos);
+				GameObject instance = Instantiate(blastShieldGameObj,spawnPosition,Quaternion.identity) as GameObject;
+				bs.addBarrier(instance);
+				bs.setBoard(this);
+			}
 		}
 	}
 
@@ -149,8 +163,8 @@ public class boardManager : MonoBehaviour {
         GameObject instance = Instantiate(energy, spawnPosition, Quaternion.LookRotation(Vector3.up)) as GameObject;
         myTile.setEnergy(true);		// wow
         myTile.setEnergy(instance);	// so rigor
-        int spawnIndex=0;
-        while (turretSpawnPoint[spawnIndex] != pos) spawnIndex++;
+        int spawnIndex = 0;
+        while (turretSpawnPoints[spawnIndex] != pos) spawnIndex++;
         turretSpawnTimers[spawnIndex] = 1;
     }
 	
@@ -173,26 +187,30 @@ public class boardManager : MonoBehaviour {
     public bool isBlocked(Vector2 firePosition, Vector2 targetPosition){
         Vector3 firePos = SS.hexPositionTransform(firePosition);
         Vector3 targetPos = SS.hexPositionTransform(targetPosition);
-        Vector3 barrierPos;
+        Vector3 pos;
         float dis;
 		bool possibleBlock = false;
-        for (int i=0; i<barrierSpawnPoint.Length; i++) {
-			barrierPos = SS.hexPositionTransform (barrierSpawnPoint [i]);
-			if (isInBound(firePos.x,firePos.y,
-                targetPos.x,targetPos.y,
-                barrierPos.x,barrierPos.y)) { //make sure the barrier is inside the parallelogram
-				dis = DistancePointLine (barrierPos, firePos, targetPos);
-				if (dis < tileSize / 2 - epsilon) {
-					return true; //the projectile cut through one 
-				} else if (almostEqual(dis,tileSize / 2)) { // We need to be careful when the line is tangent to the circle
-					possibleBlock = true;
-				}                              
+        foreach (blastShield b in blastShields) {
+			if (b.isActivated()){
+				foreach(Vector2 v in b.barrierPos){
+					pos = SS.hexPositionTransform(v);
+					if (isInBound(firePos.x,firePos.y,
+					              targetPos.x,targetPos.y,
+					              pos.x,pos.y)) { //make sure the barrier is inside the parallelogram
+						dis = DistancePointLine (pos, firePos, targetPos);
+						if (dis < tileSize / 2 - epsilon) {
+							return true; //the projectile cut through one 
+						} else if (almostEqual(dis,tileSize / 2)) { // We need to be careful when the line is tangent to the circle
+							possibleBlock = true;
+						}                              
+					}
+				}
 			}
 		}
 		if (possibleBlock) {
 			Vector2 tempTgt1,tempTgt2;
-			tempTgt1=targetPosition+Vector2.left * 0.5f;	// Nudge the target a little bit to the left
-			tempTgt2=targetPosition+Vector2.right * 0.5f;	// Nudge the target a little bit to the right
+			tempTgt1 = targetPosition + Vector2.left * 0.6f;	// Nudge the target a little bit to the left
+			tempTgt2 = targetPosition + Vector2.right * 0.6f;	// Nudge the target a little bit to the right
 			// If both ways are blocked, it's blocked; If not, it's not blocked
 			return isBlocked(firePosition,tempTgt1) && isBlocked(firePosition,tempTgt2);
 		}
@@ -207,6 +225,9 @@ public class boardManager : MonoBehaviour {
         float temp;
         if (x1>x2){temp = x1; x1 = x2; x2 = temp;}
         if (y1>y2){temp = y1; y1 = y2; y2 = temp;}
+		if (x1 == x2) {
+			return y < y2 + epsilon && y > y1 - epsilon && Mathf.Abs (x - x1) < tileSize;
+		}
         return (x1 < x + epsilon) && 
                 (x2 > x - epsilon) && 
                 (y1 < y + epsilon) && 
@@ -236,9 +257,9 @@ public class boardManager : MonoBehaviour {
         float turretY;
 		List<int> turretPos;
 
-        for (int i = 0;i < turretSpawnPoint.Length;i++){
-			turretPos = vecToBoard(turretSpawnPoint[i]);
-			if (SS.getDistance(turretSpawnPoint[i],pos) <= range 
+        for (int i = 0;i < turretSpawnPoints.Count;i++){
+			turretPos = vecToBoard(turretSpawnPoints[i]);
+			if (SS.getDistance(turretSpawnPoints[i],pos) <= range 
 			    && board [turretPos [0], turretPos [1]].turretIsActivated ()){    // Use the functions in SS!
                 return true;
             }
@@ -251,10 +272,10 @@ public class boardManager : MonoBehaviour {
 		int range = dataBase.turretRange;
 		float turretX;
 		float turretY;
-		for (int i=0;i<turretSpawnPoint.Length;i++){
-			if (SS.getDistance(turretSpawnPoint[i],pos)<=range){  
-				if(getTile (turretSpawnPoint[i]).turretIsActivated()){
-					attackers.Add (getTile (turretSpawnPoint[i]).getTurret ());
+		for (int i=0;i<turretSpawnPoints.Count;i++){
+			if (SS.getDistance(turretSpawnPoints[i],pos)<=range){  
+				if(getTile (turretSpawnPoints[i]).turretIsActivated()){
+					attackers.Add (getTile (turretSpawnPoints[i]).getTurret ());
 				}
 			}
 		}
@@ -264,12 +285,10 @@ public class boardManager : MonoBehaviour {
 	public bool bomb(Vector2 position,damageInfo damage){
 		bool hit = false;
 		List<int> pos = vecToBoard (position);
-		//print ("bomb!");
-		print ("Bomb:" + (new Vector2(pos[0],pos[1])).ToString());
 
         // If damage is applied to a turret
 		if (board [pos [0], pos [1]].turretIsActivated ()) {
-			board [pos [0], pos [1]].getTurret().takeDamage(damage);
+			damage.applyToTurret(board [pos [0], pos [1]].getTurret());
 			hit = true;
 		}
         // If damage is applied to a player
@@ -277,8 +296,16 @@ public class boardManager : MonoBehaviour {
 			damage.applyToPlayer(getPlayer(position));
 			hit = true;
 		}
+		if (damage.type != "tentative") {
+			foreach (blastShield b in blastShields) {
+				if (b.hit (position) && !b.hit (players[0].getPosition()) 
+				    				 && !b.hit (players[0].getPosition())){
+					b.rise();
+				}
+			}
+		}
 		board [pos[0], pos[1]].addDamage (damage);
-        anim.explode( position, Quaternion.identity);
+        anim.explode(position, Quaternion.identity);
 		return hit;
 	}
 
@@ -315,16 +342,26 @@ public class boardManager : MonoBehaviour {
 		return Vector3.Magnitude(ProjectPointLine(point, lineStart, lineEnd) - point);
 	}
 
-	public Vector2[] turretGetter(){
-		return turretSpawnPoint;
+	public List<Vector2> turretGetter(){
+		return turretSpawnPoints;
 	}
 	
-	public Vector2[] barrierGetter(){
-		return barrierSpawnPoint;
+	public List<Vector2> barrierGetter(){
+		return barrierSpawnPoints;
+	}
+
+	public bool isBarrierSpawnPoint(Vector2 pos){
+		return barrierSpawnPoints.Contains (pos);
+	}
+
+	public void setBarrier(Vector2 v, bool value){
+		List<int> temp = vecToBoard(v);
+		int x=temp[0],y=temp[1];
+		board[x,y].activateWall(value);
 	}
 
     public void setPlayers(List<player> playerList){
-        players=playerList;
+        players = playerList;
     }
 
 	public tile getTile(Vector2 position){

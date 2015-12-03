@@ -34,7 +34,7 @@ public class minigun : weapon
 	
 	
 	public minigun()
-		: base("Minigun", "Can shoot " + MAXSHOTS.ToString() +" times in one turn", DAMAGE, RANGE, DELAY, MAXSHOTS)
+		: base("Minigun", "momentum", "Can shoot " + MAXSHOTS.ToString() +" times in one turn", DAMAGE, RANGE, DELAY, MAXSHOTS)
 	{
 		shots = new List<FireInstance>();
 	}

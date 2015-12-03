@@ -20,7 +20,7 @@ public class mine : weapon
 
 	// A very special weapon
 	public mine()
-		: base("Mine", "mine", 10, 1, 0, 1)
+		: base("Mine", "explosive", "mine", 10, 1, 0, 1)
 	{
 	}
 
@@ -31,7 +31,6 @@ public class mine : weapon
 		tManager = gameController.GetComponent<turnManager> ();
 		bManager = gameController.GetComponent<boardManager> ();
 		SS = gameController.GetComponent<functionManager> ();
-		mineModel = GameObject.FindGameObjectWithTag ("mine_model");
 	}
 	
 	void Update()
@@ -75,9 +74,12 @@ public class mine : weapon
 		damageInfo newDamage = new damageInfo();   /// have a special mine damageinfo, with callback to signal if it hit??
 		newDamage.damageAmount = this.getDamage();
 		newDamage.attacker = this.getMaster();
+		newDamage.weaponFired = this;
+		newDamage.type = "direct";
 
 		hit = bManager.bomb(minePos[index], newDamage)||hit;
 
+		newDamage.type = "splash";
 		// Now generate the splash damage
 		newDamage.damageAmount = SPLASH_DAMAGE;
 		for (int i=0; i<6; i++)
