@@ -82,7 +82,7 @@ public class statsManager : MonoBehaviour {
 	public List<Vector2> turretSpawnPoints;
 
     public int mapSize;
-	public int playerTimer;
+	public int turnTimer;
 
 	public List<weapon> weapons;
 
