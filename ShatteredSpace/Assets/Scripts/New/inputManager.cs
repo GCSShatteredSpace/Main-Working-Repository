@@ -27,6 +27,8 @@ public class inputManager : MonoBehaviour {
 	int maxSteps;
 
 	bool freezedTurn = false;
+	float inputStartTime = 0;
+	bool timerEnded = false;
 
 	void Start () { 
 		// This part is necessary for any spawned prefab
@@ -53,10 +55,13 @@ public class inputManager : MonoBehaviour {
 	void Update () {
 		if (Input.GetKey ("space") && commandable) {
 			// Temporary code
-			myPlayer.setActionSequence(commands);
-			commandable = false;
-			buildButton.SetActive (false);
+			sendCommands();
 		}
+	}
+	public void sendCommands(){
+		myPlayer.setActionSequence (commands);
+		commandable = false;
+		buildButton.SetActive (false);
 	}
 
 	public void resetCommands(Vector2 pos){
@@ -83,7 +88,7 @@ public class inputManager : MonoBehaviour {
 
 	public void startNewTurn(Vector2 pos){  // Reset after each turn
 		resetCommands (pos);
-
+		inputStartTime = Time.time;
 		buildButton.SetActive (true);
 		maxSteps = database.maxSteps;
 		// Antibody grenade
@@ -253,5 +258,8 @@ public class inputManager : MonoBehaviour {
 		}else{
 			commandable = true;
 		}
+	}
+	public float getTurnStartTime(){
+		return inputStartTime;
 	}
 }

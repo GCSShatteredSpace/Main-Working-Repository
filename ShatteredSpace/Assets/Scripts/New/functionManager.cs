@@ -57,7 +57,7 @@ public class functionManager : MonoBehaviour {
 	
 	public bool notOutOfBounds(Vector2 v){ //see if the tile is in the board bounds
 		Vector2 origin = new Vector2(0f,0f);
-		return getDistance(origin,v) <= 6;
+		return getDistance(origin,v) <= (dataBase.mapSize - 1);
 	}
 	
 	public bool areAligned(Vector2 v){	// See if direction is along one of the six ones

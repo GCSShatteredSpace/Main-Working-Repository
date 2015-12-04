@@ -50,8 +50,8 @@ public class grenade : weapon {
 		// Creating the splatter damage
 		newDamage.type = "splash";
 		newDamage.damageAmount = SPLASHDAMAGE;
-		for (int i=0; i<6; i++) {
-			newDamage.push=SS.direction[i];
+		for (int i = 0; i < 6; i++) {
+			newDamage.push = SS.direction[i];
 			bManager.splashBomb(pos + SS.direction[i],newDamage);	
 		}
 
