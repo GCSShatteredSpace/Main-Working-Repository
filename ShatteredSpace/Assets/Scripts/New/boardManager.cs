@@ -273,8 +273,9 @@ public class boardManager : MonoBehaviour {
 		float turretX;
 		float turretY;
 		for (int i=0;i<turretSpawnPoints.Count;i++){
-			if (SS.getDistance(turretSpawnPoints[i],pos)<=range){  
-				if(getTile (turretSpawnPoints[i]).turretIsActivated()){
+			Vector2 turPos = turretSpawnPoints[i];
+			if (SS.getDistance(turPos,pos)<=range){ 
+				if(getTile (turPos).turretIsActivated() && !isBlocked(turPos,pos)){
 					attackers.Add (getTile (turretSpawnPoints[i]).getTurret ());
 				}
 			}
@@ -373,6 +374,7 @@ public class boardManager : MonoBehaviour {
 		if (isDangerous (v)) {
 			List<turret> turretList = this.getAttackingTurrets (v);
 			foreach (turret t in turretList) {
+
 				print ("One turret attacks!");
 				this.bomb (v,t.getDamage());
 			}
