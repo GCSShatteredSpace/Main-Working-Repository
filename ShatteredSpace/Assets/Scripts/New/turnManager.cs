@@ -68,6 +68,7 @@ public class turnManager : MonoBehaviour {
 	
 	void startTurn(){
 		print ("Turn starts!");
+		players [0].printTurn (turn);
 		StartCoroutine(clock());
 	}
 	
