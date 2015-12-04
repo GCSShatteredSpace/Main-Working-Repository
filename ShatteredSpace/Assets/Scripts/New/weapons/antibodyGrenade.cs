@@ -44,7 +44,7 @@ public class antibodyGrenade : weapon {
 		newDamage.type = "splash";
 		newDamage.damageAmount = SPLASHDAMAGE;
 		for (int i=0; i<6; i++) {
-			bManager.splashBomb(pos+SS.direction[i],newDamage);	
+			bManager.bomb(pos+SS.direction[i],newDamage);	
 		}
 		
 		// Since the damage is generated, the weapon can take a rest

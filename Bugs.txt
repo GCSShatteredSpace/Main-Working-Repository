@@ -5,7 +5,7 @@ Game enters infinite loop (turn never ends) when players press space for too man
 At some angles the player can shoot in between barriers.
 # Fixed:If you change weapon when plannning your move the attack remains
 Sometimes the players attack is out of sync. (Shots hit when they are not supposed to etc.)
-# Explosion prefabs never go away (I think fixed)
+Explosion prefabs never go away.
 # Fixed: Clicking on menu items will also input command on the board which is annoying.
 # Fixed: No dangerous sign.
 # Fixed:After building minigun, every single weapon can be fired multiple times in one turn.
