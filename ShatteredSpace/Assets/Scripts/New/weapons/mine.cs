@@ -84,7 +84,7 @@ public class mine : weapon
 		newDamage.damageAmount = SPLASH_DAMAGE;
 		for (int i=0; i<6; i++)
 		{
-			hit=bManager.bomb(minePos[index]+SS.direction[i],newDamage)||hit;
+			hit=bManager.splashBomb(minePos[index]+SS.direction[i],newDamage)||hit;
 		}
 
 		if (hit){
