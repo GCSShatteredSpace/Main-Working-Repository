@@ -15,6 +15,7 @@ public class turnManager : MonoBehaviour {
 	
 	int readyPlayers = 0;		// If it equals to num of players start turn
 	bool[] finishedPlayerArray = new bool[2]; //Holds which players are finished
+
 	[SerializeField]int time;
 	int turn;
 	bool turnStarted;
@@ -138,8 +139,15 @@ public class turnManager : MonoBehaviour {
 		if (turnStarted) {
 			//print ("Player" + playerId.ToString () + " finished turn!");
 			finishedPlayerArray [playerId] = true;
-			if (getFinishedPlayers () == players.Count && turnStarted)
+			bool noMomentum = true;
+			foreach(player p in players){
+				if(!p.getMomentum().Equals(new Vector2(0,0))){
+					noMomentum = false;
+				}
+			}
+			if (getFinishedPlayers () == players.Count && turnStarted && noMomentum){
 				endTurn ();
+			}
 		}
 	}
 

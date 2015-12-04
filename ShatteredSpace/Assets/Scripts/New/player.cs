@@ -15,8 +15,8 @@ public class player : MonoBehaviour {
 	PhotonView photonView;
 	public delegate void SendMessage(string MessageOverlay);
 	public event SendMessage SendNetworkMessage;
-	[SerializeField] public int playerIndex;
-	[SerializeField] int playerGameID;
+	[SerializeField] public int playerIndex; //Relative ID. 0 = Own Player, 1 = Other Player
+	[SerializeField] int playerGameID; //Absolute ID in terms of join order
 
 	// Turn management stuff
 	bool finishedTurn;
@@ -194,8 +194,9 @@ public class player : MonoBehaviour {
 
 			finishedTurn = true;
 			// Even if it's not moving, it should tell turnManager because the other player might still be moving
-			// Notice that one player can be done with actions and still move because they are knocked away
-			tManager.attemptToMove (momentum,Vector2.zero,playerIndex);
+			// Notice that one playe	r can be done with actions and still move because they are knocked away
+			Debug.Log (momentum + " " + playerIndex	);
+			tManager.attemptToMove (momentum, Vector2.zero,playerIndex);
 			if (waitCount == 0 && momentum == Vector2.zero){
 				tManager.finishAction(playerIndex);
 			}
@@ -209,8 +210,12 @@ public class player : MonoBehaviour {
 	}
 
 	public void printTurn(int i){
-		SendNetworkMessage("---- Turn " + i + " started----");
+		if(photonView.isMine && playerGameID == 0){
+			string message = "----Turn " + i + " Started----";
+			SendNetworkMessage(message);
+		}
 	}
+
 	// Called by turn manager
 	public IEnumerator moveStep(List<Vector2> vSequence){
 		float time;
@@ -478,9 +483,14 @@ public class player : MonoBehaviour {
 		// Momentum shouldn't really add
 		// Cause it will break the game
 		momentum = push;
+		print (playerIndex + " " + push.x + " " + push.y);
 		print("Gained momentum!");
 	}
-	
+
+	public Vector2 getMomentum(){
+		return momentum;
+	}
+
 	public int getID(){
 		return playerGameID;
 	}
