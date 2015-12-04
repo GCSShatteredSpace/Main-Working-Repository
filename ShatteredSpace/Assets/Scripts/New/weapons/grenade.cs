@@ -52,7 +52,7 @@ public class grenade : weapon {
 		newDamage.damageAmount = SPLASHDAMAGE;
 		for (int i=0; i<6; i++) {
 			newDamage.push=SS.direction[i];
-			bManager.bomb(pos+SS.direction[i],newDamage);	
+			bManager.splashBomb(pos + SS.direction[i],newDamage);	
 		}
 
 		// Since the damage is generated, the weapon can take a rest

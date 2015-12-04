@@ -282,6 +282,13 @@ public class boardManager : MonoBehaviour {
 		}
 		return attackers;        
 	}
+	//Use this for safe splash damage calculations
+	public bool splashBomb(Vector2 position, damageInfo damage){
+		if (SS.notOutOfBounds (position)) {
+			return bomb (position, damage);
+		}
+		return false;
+	}
 
 	public bool bomb(Vector2 position,damageInfo damage){
 		bool hit = false;

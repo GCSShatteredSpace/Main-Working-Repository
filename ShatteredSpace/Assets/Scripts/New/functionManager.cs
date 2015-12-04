@@ -55,9 +55,9 @@ public class functionManager : MonoBehaviour {
 		return dist;
 	}
 	
-	public bool isOutOfBounds(Vector2 v){ //see if the tile is in the board bounds
+	public bool notOutOfBounds(Vector2 v){ //see if the tile is in the board bounds
 		Vector2 origin = new Vector2(0f,0f);
-		return getDistance(origin,v) <= 4;
+		return getDistance(origin,v) <= 6;
 	}
 	
 	public bool areAligned(Vector2 v){	// See if direction is along one of the six ones
